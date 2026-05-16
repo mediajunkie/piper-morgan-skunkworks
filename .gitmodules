@@ -1,0 +1,6 @@
+[submodule "byoc/priors/claude-for-legal"]
+	path = byoc/priors/claude-for-legal
+	url = https://github.com/anthropics/claude-for-legal.git
+[submodule "byoc/priors/knowledge-work-plugins"]
+	path = byoc/priors/knowledge-work-plugins
+	url = https://github.com/anthropics/knowledge-work-plugins.git
