@@ -47,8 +47,8 @@ Restart the session. The plugin will be available.
 
 The interview takes ~10-15 minutes. It asks ONE question per turn (serial, not batched) and writes:
 
-- `~/.claude/plugins/config/piper-morgan/piper-morgan/CLAUDE.md` — your PM profile
-- `~/.claude/plugins/config/piper-morgan/company-profile.md` — cross-context profile (shared with any future sibling Piper plugins)
+- `~/.claude/plugins/config/dinp/piper-morgan/CLAUDE.md` — your PM profile
+- `~/.claude/plugins/config/dinp/company-profile.md` — cross-context profile (shared with any future sibling Piper plugins)
 
 Both are plain-text files you can edit directly for small changes. Re-run with `--redo` to re-interview from scratch (the prior version is backed up).
 
@@ -61,7 +61,7 @@ Both are plain-text files you can edit directly for small changes. Re-run with `
 
 ## Path conventions
 
-The plugin uses `piper-morgan/piper-morgan` as its config path (`~/.claude/plugins/config/<marketplace>/<plugin>/CLAUDE.md`) on the assumption that `piper-morgan` is both the marketplace name and the plugin name. If the marketplace ships as something else later, every reference in the plugin needs the path updated.
+The plugin uses `dinp/piper-morgan` as its config path (`~/.claude/plugins/config/<marketplace>/<plugin>/CLAUDE.md`). The marketplace slug is `dinp` (designinproduct — xian's umbrella org); the plugin slug is `piper-morgan`. If the marketplace ships under a different slug later, every reference in the plugin needs the path updated.
 
 ## Reporting issues
 

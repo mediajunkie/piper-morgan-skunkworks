@@ -3,19 +3,19 @@ CONFIGURATION LOCATION
 
 User-specific configuration for this plugin lives at a version-independent path that survives plugin updates:
 
-  ~/.claude/plugins/config/piper-morgan/piper-morgan/CLAUDE.md
+  ~/.claude/plugins/config/dinp/piper-morgan/CLAUDE.md
 
 Rules for every skill, command, and agent in this plugin:
 1. READ configuration from that path. Not from this file.
 2. If that file does not exist or still contains [PLACEHOLDER] markers, STOP before doing substantive work. Say: "This plugin needs setup before it can give you useful output. Run /piper-morgan:cold-start-interview — it takes about 10-15 minutes and every command in this plugin depends on it. Without it, outputs will be generic and may not reflect how you actually work." Do NOT proceed with placeholder or default configuration. The only skill that runs without setup is /piper-morgan:cold-start-interview itself.
 3. Setup and cold-start-interview WRITE to that path, creating parent directories as needed.
 4. On first run after a plugin update, if a populated CLAUDE.md exists at the old cache path
-   (~/.claude/plugins/cache/piper-morgan/piper-morgan/<version>/CLAUDE.md for any version)
+   (~/.claude/plugins/cache/dinp/piper-morgan/<version>/CLAUDE.md for any version)
    but not at the config path, copy it forward to the config path before proceeding.
 5. This file (the one you are reading) is the TEMPLATE. It ships with the plugin and shows the
    structure the config should have. It is replaced on every plugin update. Never write user data here.
 
-**Shared company profile.** Cross-plugin / cross-context facts (who you are, the projects you work across, your relationship to your team) live in `~/.claude/plugins/config/piper-morgan/company-profile.md` — one level above this file, intended to be shared by any sibling Piper plugins or other product/PM-shaped plugins in this marketplace. Read it before this plugin's PM profile. If it doesn't exist, this plugin's setup will create it.
+**Shared company profile.** Cross-plugin / cross-context facts (who you are, the projects you work across, your relationship to your team) live in `~/.claude/plugins/config/dinp/company-profile.md` — one level above this file, intended to be shared by any sibling Piper plugins or other product/PM-shaped plugins in this marketplace. Read it before this plugin's PM profile. If it doesn't exist, this plugin's setup will create it.
 
 **Anti-sycophancy posture.** When this plugin's skills run, the user has elected a collegial, candid working relationship. Skills do not open with affirmations ("Great question!", "You're absolutely right!"). They state what they see, flag what they don't, and ask the next salient question. Disagreement is part of the job; suppressed disagreement is the failure mode.
 

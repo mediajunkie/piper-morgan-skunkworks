@@ -5,9 +5,9 @@ description: >
   at a time (serial, not batched) to learn how they work as a PM — their
   voice/posture rules, project portfolio, decision-making patterns, routing
   conventions — and writes the populated PM profile to
-  ~/.claude/plugins/config/piper-morgan/piper-morgan/CLAUDE.md, plus (if first
+  ~/.claude/plugins/config/dinp/piper-morgan/CLAUDE.md, plus (if first
   install) the shared company profile at
-  ~/.claude/plugins/config/piper-morgan/company-profile.md. Run this on fresh
+  ~/.claude/plugins/config/dinp/company-profile.md. Run this on fresh
   install, when the plugin config has placeholders, or any time the profile
   feels stale.
 argument-hint: "[--redo to re-interview from scratch]"
@@ -30,7 +30,7 @@ This skill **MUST** honor these rules, even when conducting the interview feels 
 
 ## Cold-start check (run this first)
 
-Check `~/.claude/plugins/config/piper-morgan/piper-morgan/CLAUDE.md`:
+Check `~/.claude/plugins/config/dinp/piper-morgan/CLAUDE.md`:
 
 - **Does not exist** → start the interview from the orientation.
 - **Contains `<!-- SETUP PAUSED AT: -->`** → greet the user, name the section they paused at, offer to resume or start over.
@@ -41,11 +41,11 @@ If `--redo` was passed, ignore the existing file and start fresh. (Make a backup
 
 ## Migration check
 
-If a populated CLAUDE.md (no `[PLACEHOLDER]` markers) exists at `~/.claude/plugins/cache/piper-morgan/piper-morgan/*/CLAUDE.md` but not at the config path, copy it forward to the config path before proceeding. Show the user a one-line summary of what was migrated.
+If a populated CLAUDE.md (no `[PLACEHOLDER]` markers) exists at `~/.claude/plugins/cache/dinp/piper-morgan/*/CLAUDE.md` but not at the config path, copy it forward to the config path before proceeding. Show the user a one-line summary of what was migrated.
 
 ## Shared company profile check
 
-Look for `~/.claude/plugins/config/piper-morgan/company-profile.md`.
+Look for `~/.claude/plugins/config/dinp/company-profile.md`.
 
 - **If it exists:** Read it. Show a one-line confirmation: "You're [name], working on [primary projects]. Right? (Say 'update' to revise.)" If confirmed, skip the cross-context identity questions — go straight to the plugin-specific ones.
 - **If it doesn't exist:** This is the first piper-morgan-marketplace plugin the user has set up. After the orientation, ask the cross-context questions and write them to the shared profile (template below), then continue with the plugin-specific questions. Tell the user: "I've saved your cross-context profile to [path] — any sibling Piper plugins you install later will read it and skip these questions."
@@ -72,7 +72,7 @@ Wait for the user's response. Do not show the first question until they've said 
 
 ## Part 1 — Cross-context identity (skip if company-profile.md exists)
 
-These five questions go to `~/.claude/plugins/config/piper-morgan/company-profile.md` and will be reused by any sibling plugins.
+These five questions go to `~/.claude/plugins/config/dinp/company-profile.md` and will be reused by any sibling plugins.
 
 **Q1.1.** What name should I use for you? (First name is fine; or whatever you'd want a colleague to call you.)
 
@@ -105,7 +105,7 @@ I'm asking because the rest of the plugin's defaults shift slightly by role shap
 
 → wait for answer; record as `project_portfolio`. Capture both the list AND which has primary attention.
 
-→ Before continuing: write Q1.1-Q1.5 to `~/.claude/plugins/config/piper-morgan/company-profile.md` (template at the end of this skill). Confirm to the user: "Saved your cross-context profile. Any sibling Piper plugins you install will read it." Then continue.
+→ Before continuing: write Q1.1-Q1.5 to `~/.claude/plugins/config/dinp/company-profile.md` (template at the end of this skill). Confirm to the user: "Saved your cross-context profile. Any sibling Piper plugins you install will read it." Then continue.
 
 ## Part 2 — Voice and posture rules (the load-bearing section)
 
@@ -190,7 +190,7 @@ This part may not apply if the user is a solo founder who doesn't deal with form
 Before writing the profile file:
 
 1. Show the user a summary of what was captured, organized by the profile's section structure. Use the headings from the template. Skipped/N-A sections shown as `[SKIPPED]` or `[N/A — reason]`, not as if nobody asked.
-2. Ask: "Does this look right? Anything to change before I write `~/.claude/plugins/config/piper-morgan/piper-morgan/CLAUDE.md`?"
+2. Ask: "Does this look right? Anything to change before I write `~/.claude/plugins/config/dinp/piper-morgan/CLAUDE.md`?"
 3. Apply any edits the user requests. Re-confirm after edits.
 4. On user go-ahead, write the file (create parent directories as needed). Use the template structure from the plugin's root `CLAUDE.md`, with the user's answers substituted for `[PLACEHOLDER]` markers.
 5. Tell the user where the file landed (absolute path, clickable) and that they can edit it directly for small changes.
@@ -199,7 +199,7 @@ Before writing the profile file:
 
 After writing, say one of:
 
-- If this was a fresh first install: "Done. Your PM profile is at `~/.claude/plugins/config/piper-morgan/piper-morgan/CLAUDE.md`. Your cross-context profile is at `~/.claude/plugins/config/piper-morgan/company-profile.md`. Both are plain-text files you can edit directly. Re-run `/piper-morgan:cold-start-interview --redo` for a full re-interview. v0.1 of this plugin has no other skills yet — future sub-passes will add `/piper-morgan:journal` (insight journal), `/piper-morgan:reflect` (write to the journal), and `/piper-morgan:compost` (substrate-delegated composting via Anthropic Dreams). The PoC is exercising whether this calibration shape actually holds up before adding feature surface."
+- If this was a fresh first install: "Done. Your PM profile is at `~/.claude/plugins/config/dinp/piper-morgan/CLAUDE.md`. Your cross-context profile is at `~/.claude/plugins/config/dinp/company-profile.md`. Both are plain-text files you can edit directly. Re-run `/piper-morgan:cold-start-interview --redo` for a full re-interview. v0.1 of this plugin has no other skills yet — future sub-passes will add `/piper-morgan:journal` (insight journal), `/piper-morgan:reflect` (write to the journal), and `/piper-morgan:compost` (substrate-delegated composting via Anthropic Dreams). The PoC is exercising whether this calibration shape actually holds up before adding feature surface."
 
 - If `--redo`: "Done. Your PM profile has been re-written. A backup of the prior version is at [.bak path]."
 
@@ -211,7 +211,7 @@ Then: "One thing I'd flag — this is v0.1 of a PoC. The plugin's value lives in
 
 ## Company profile template
 
-When writing `~/.claude/plugins/config/piper-morgan/company-profile.md`, use this structure:
+When writing `~/.claude/plugins/config/dinp/company-profile.md`, use this structure:
 
 ```markdown
 # Cross-context profile
@@ -229,7 +229,7 @@ When writing `~/.claude/plugins/config/piper-morgan/company-profile.md`, use thi
 
 ## PM profile template
 
-When writing `~/.claude/plugins/config/piper-morgan/piper-morgan/CLAUDE.md`, mirror the structure of the plugin's root `CLAUDE.md` template (the one this skill is shipped alongside), substituting the user's answers for the `[PLACEHOLDER]` markers. Preserve the CONFIGURATION LOCATION HTML comment block at the top — every skill in the plugin depends on it.
+When writing `~/.claude/plugins/config/dinp/piper-morgan/CLAUDE.md`, mirror the structure of the plugin's root `CLAUDE.md` template (the one this skill is shipped alongside), substituting the user's answers for the `[PLACEHOLDER]` markers. Preserve the CONFIGURATION LOCATION HTML comment block at the top — every skill in the plugin depends on it.
 
 For sections where the user said "N/A" or skipped, write `[N/A — <reason>]` or `[SKIPPED — user declined at <date>]` rather than leaving `[PLACEHOLDER]` (which would trigger the cold-start prompt again on next skill run).
 
