@@ -20,8 +20,8 @@ PA daily status + subagent dispatch state + open questions + finding log for the
 | Subagent | Status | Started | Returned | Validated | Notes |
 |---|---|---|---|---|---|
 | 1 — Anthropic plugin architecture study | **complete + PA-validated** | 2026-05-16 ~14:00 | ~14:05 (LLM wall-clock fast) | 2026-05-16 ~14:30 | Memo at `notes/subagent-1-anthropic-plugin-architecture-study-2026-05-16.md`. Three validation spot-checks all confirmed against source. |
-| 2 — PM codebase extraction analysis | not dispatched | — | — | — | Awaits Step 0 completion |
-| 3+ — PoC build pass(es) | not dispatched | — | — | — | Awaits Step 3 PM gate |
+| 2 — PM codebase extraction analysis | **complete + PA-validated** | 2026-05-16 ~14:35 | ~14:42 | 2026-05-16 ~14:55 | Memo at `notes/subagent-2-pm-extraction-analysis-2026-05-16.md`. Spot-checks: spiral_depth (real per composting-learning-architecture.md), #1017 OUTPUT-CONTENT-FILTER (shipped May 15 per activity log), LLMClient.complete() (real canonical request flow), PlaceConfidence (real per glossary). Proposed PoC triangle: cold-start-as-founder-profile + insight-journal-flat-file + composting-via-dreams-mcp. |
+| 3+ — PoC build pass(es) | not dispatched | — | — | — | Awaits Step 3 PA synthesis + PM gate (4 PM-input questions outstanding) |
 
 ## Daily log
 
