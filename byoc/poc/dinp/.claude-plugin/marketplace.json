@@ -8,7 +8,10 @@
   "plugins": [
     {
       "name": "piper-morgan",
-      "source": "./piper-morgan",
+      "source": {
+        "source": "local",
+        "path": "./piper-morgan"
+      },
       "description": "Piper Morgan as a Claude Code plugin: conducts a one-question-at-a-time cold-start interview that learns how YOU work as a PM (calibration, voice, escalation, project portfolio, project pace), writes a per-user PM profile the rest of the plugin's skills read from, and stays out of your way otherwise. PoC scaffold — feature surface grows in subsequent sub-passes.",
       "author": {
         "name": "Piper Morgan skunkworks (PA + subagents)"
