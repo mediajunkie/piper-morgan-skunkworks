@@ -1,0 +1,18 @@
+{
+  "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
+  "name": "dinp",
+  "description": "Design In Product (xian's umbrella org) — Piper Morgan skunkworks plugins. PoC marketplace; not for distribution beyond xian's own testing.",
+  "owner": {
+    "name": "Design In Product (xian)"
+  },
+  "plugins": [
+    {
+      "name": "piper-morgan",
+      "source": ".",
+      "description": "Piper Morgan as a Claude Code plugin: conducts a one-question-at-a-time cold-start interview that learns how YOU work as a PM (calibration, voice, escalation, project portfolio, project pace), writes a per-user PM profile the rest of the plugin's skills read from, and stays out of your way otherwise. PoC scaffold — feature surface grows in subsequent sub-passes.",
+      "author": {
+        "name": "Piper Morgan skunkworks (PA + subagents)"
+      }
+    }
+  ]
+}
