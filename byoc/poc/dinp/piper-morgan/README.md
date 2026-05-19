@@ -23,21 +23,25 @@ These are deliberate cuts per the BYOC scope synthesis (build-less discipline: s
 
 ## Install (local development)
 
-From the directory containing the plugin:
+Use the `--plugin-dir` flag when starting Claude Code:
 
-```
-/plugin marketplace add /Users/xian/Development/piper-morgan-skunkworks/byoc/poc/piper-morgan
-```
-
-(For PoC iteration. For real distribution we'd add a `marketplace.json` and install via marketplace name.)
-
-Then in a Claude Code session:
-
-```
-/plugin install piper-morgan@<marketplace-name>
+```bash
+claude --plugin-dir /Users/xian/Development/piper-morgan-skunkworks/byoc/poc/dinp/piper-morgan
 ```
 
-Restart the session. The plugin will be available.
+This loads the plugin for the session. Each new `claude` session needs the same flag.
+
+Optional convenience — shell alias for daily use:
+
+```bash
+echo 'alias claude-piper="claude --plugin-dir /Users/xian/Development/piper-morgan-skunkworks/byoc/poc/dinp/piper-morgan"' >> ~/.zshrc
+source ~/.zshrc
+# then just: claude-piper
+```
+
+(Use a distinct alias name like `claude-piper` so it doesn't override your normal `claude` alias for non-plugin sessions.)
+
+**Why not `/plugin marketplace add`?** The marketplace install path requires public-catalog publishing that isn't available for local dev. Even Anthropic's first-party plugins (OpenLaws Surveyor, etc.) use `--plugin-dir` as the canonical CLI install for unpublished plugins. See `/Users/xian/Development/piper-morgan-skunkworks/byoc/notes/poc-finding-001-cli-install-paths.md` for the full lore.
 
 ## First run
 

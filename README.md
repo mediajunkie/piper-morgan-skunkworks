@@ -18,7 +18,7 @@ Proof-of-concept exploring how to express Piper Morgan's distinctive value (comp
 
 **Started**: 2026-05-16
 **Plan**: `piper-morgan-product/dev/active/skunkworks-byoc-poc-plan-v0.2-2026-05-16.md`
-**Status**: Step 0 setup
+**Status**: Sub-pass 4.a shipped (plugin scaffold + cold-start-as-pm-profile skill); PM gate test in progress
 
 ## Conventions
 
@@ -42,3 +42,9 @@ Skunkworks projects are not held to the main repo's full discipline (no mandator
 - Subagents execute substantive work with PA validation gates
 - Leadership read-in happens after meaningful signal — typically after a feature is expressed end-to-end in the PoC
 - Findings flow back into main-repo work via PA memos and discussion with leadership
+
+## Cross-project lore worth keeping
+
+Findings that survive their originating PoC and apply to future skunkworks work:
+
+- **PoC Finding 001 — Claude Code CLI plugin install paths** (`byoc/notes/poc-finding-001-cli-install-paths.md`). For local-dev plugin install, use `claude --plugin-dir <plugin-root>`. The `/plugin marketplace add` path requires public-catalog publishing that isn't available for local-only development. Applies to any future skunkworks plugin work, not just byoc.
