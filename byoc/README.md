@@ -17,6 +17,8 @@ The question this PoC aims to surface signal on: **"what lives where?"** — whi
 
 This complements (does not duplicate) PDR-005 strategic BYOC work happening in the main repo with Architect, PPM, CXO leading.
 
+**PDR-005 status (as of 2026-05-20)**: PDR-005 v0.5 is the canonical BYOC architectural-decision vehicle (confirmed by PPM in 360 item 1.3 close + Architect concur, 2026-05-20). PDR-005 Open questions 6 + 7 are the companion ADRs in Architect's lane — both gate on PDR-005 v1.0 ratification. ADR-061 retains LLM Touch Boundary Enforcement (the number was allocated before BYOC moved up the tier ladder to PDR). Live draft: `piper-morgan-product/dev/active/PDR-005-bring-your-own-chat-draft-v0.5-2026-05-19.md`.
+
 ## What this is NOT
 
 - Not a production track
