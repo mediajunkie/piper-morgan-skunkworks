@@ -1,47 +1,61 @@
-# piper-morgan plugin (PoC v0.1)
+# Piper Morgan plugin (BYOC PoC v0.2)
 
-Calibration-heavy PM plugin. Built as a skunkworks PoC to test whether Piper Morgan's distinctive value — the calibration and voice that make outputs feel like a colleague who knows you, not generic PM templates — can be expressed as an Anthropic plugin with a thin-skills-over-rich-config shape.
+**Bring your PM assistant into your own chat.** This is a thin proof-of-concept that packages Piper
+Morgan — a product-management assistant — as a Claude Code / Claude Desktop plugin: three small skills
+over a local connection to a running Piper Morgan server. The idea (Bring Your Own Chat) is that you
+don't need a separate Piper app — you talk to Piper inside the Claude you already use.
 
-This is **sub-pass 4.a** of the BYOC PoC build. It ships the plugin scaffold + Feature 1 (`cold-start-as-pm-profile`) only. Features 2 (insight-journal-flat-file) and 3 (composting-via-dreams-mcp) are deliberately not built yet — separate sub-passes.
+> **A couple of concepts, introduced** (so the rest reads clearly):
+> - **MCP server** — a small local program that lets Claude call out to another system. This plugin
+>   includes one that forwards your questions to your running Piper Morgan.
+> - **Piper's "Conscious Floor"** — when Piper doesn't have the information to answer well, it's designed
+>   to *say so honestly and ask for what it needs*, rather than guess. You'll see this below: the
+>   `consult-piper` skill notices when Piper hits that limit and fills the gap from your GitHub.
 
-## What's in this version
+## The three skills
 
-- `.claude-plugin/plugin.json` — plugin manifest
-- `CLAUDE.md` — plugin root template (the structure the cold-start populates, with `[PLACEHOLDER]` markers)
-- `skills/meet-piper/SKILL.md` — the single load-bearing skill in v0.1
-- `.mcp.json` — empty `mcpServers` shell, ready for sub-pass 4.c to extend
-- `README.md` — this file
+| Skill | What it does |
+|---|---|
+| **`/piper-morgan:meet-piper`** | A one-question-at-a-time interview that learns how *you* work as a PM (voice, escalation, project portfolio, pace) and writes it to a profile the plugin reuses. Run this first. |
+| **`/piper-morgan:ask-piper`** | Relays a single PM question to your locally-running Piper and shows you Piper's own answer. Thin and literal — a quick consult. |
+| **`/piper-morgan:consult-piper`** | The fuller working session: asks Piper, and if Piper says it lacks the context to answer (e.g. "I don't have your current projects"), it gathers exactly that from your GitHub, re-asks Piper, and gives you a grounded answer — clearly labeling what came from Piper vs. what it gathered for you. |
 
-## What this plugin does NOT have yet
+The skills are **layered**: `consult-piper` builds on the same underlying connection `ask-piper` uses.
 
-- `/piper-morgan:journal` and `/piper-morgan:reflect` — sub-pass 4.b
-- `/piper-morgan:compost` MCP tool wrapping Anthropic Dreams API — sub-pass 4.c
-- `--check-integrations` flag on cold-start — deferred (no real integration probing in v0.1)
-- Any real MCP server connections — `.mcp.json` is a shell
+## Prerequisites
 
-These are deliberate cuts per the BYOC scope synthesis (build-less discipline: scaffold + Feature 1 first, gate on whether the calibration shape holds, only then add features).
+1. **A local Piper Morgan server running.** The plugin talks to Piper at `http://localhost:8001`. Start
+   it from the Piper Morgan repo: `python main.py` (default port 8001). If it's not running, the skills
+   will tell you so plainly rather than make something up.
+2. **`uv`** installed (the MCP server self-bootstraps its Python dependencies via `uv` — no separate
+   virtualenv to manage).
+3. For `consult-piper`'s GitHub gathering: a connected GitHub MCP **or** the `gh` CLI authenticated
+   (`gh auth status`).
 
-## Install (local development)
+## Install
 
-Use the `--plugin-dir` flag when starting Claude Code:
+### Claude Code (CLI) — the tested path
+Start Claude Code with the plugin loaded:
 
 ```bash
-claude --plugin-dir /Users/xian/Development/piper-morgan-skunkworks/byoc/poc/dinp/piper-morgan
+claude --plugin-dir /path/to/piper-morgan-skunkworks/byoc/poc/dinp/piper-morgan
 ```
 
-This loads the plugin for the session. Each new `claude` session needs the same flag.
-
-Optional convenience — shell alias for daily use:
+Each new `claude` session needs the flag. Optional convenience alias:
 
 ```bash
-echo 'alias claude-piper="claude --plugin-dir /Users/xian/Development/piper-morgan-skunkworks/byoc/poc/dinp/piper-morgan"' >> ~/.zshrc
-source ~/.zshrc
-# then just: claude-piper
+alias claude-piper="claude --plugin-dir /path/to/.../byoc/poc/dinp/piper-morgan"
 ```
 
-(Use a distinct alias name like `claude-piper` so it doesn't override your normal `claude` alias for non-plugin sessions.)
+### Claude Desktop (from a zip) — newer test surface
+The plugin can also be packaged as a zip and installed in Claude Desktop. This path is **less battle-
+tested** than the CLI: the MCP server's file path resolution (`${CLAUDE_PLUGIN_ROOT}/mcp/server.py`) and
+the `uv` / local-Piper prerequisites may behave differently from a zip install. **If something doesn't
+resolve, that's a finding, not a failure** — capture it (see "Reporting findings").
 
-**Why not `/plugin marketplace add`?** The marketplace install path requires public-catalog publishing that isn't available for local dev. Even Anthropic's first-party plugins (OpenLaws Surveyor, etc.) use `--plugin-dir` as the canonical CLI install for unpublished plugins. See `/Users/xian/Development/piper-morgan-skunkworks/byoc/notes/poc-finding-001-cli-install-paths.md` for the full lore.
+> **Why not `/plugin marketplace add`?** The marketplace install path needs public-catalog publishing,
+> which isn't set up for this PoC. `--plugin-dir` (and the zip) are the canonical install paths for an
+> unpublished plugin. Full lore: `byoc/notes/poc-finding-001-cli-install-paths.md`.
 
 ## First run
 
@@ -49,24 +63,40 @@ source ~/.zshrc
 /piper-morgan:meet-piper
 ```
 
-The interview takes ~10-15 minutes. It asks ONE question per turn (serial, not batched) and writes:
-
+~10–15 minutes, one question per turn. It writes two plain-text files you can edit directly:
 - `~/.claude/plugins/config/dinp/piper-morgan/CLAUDE.md` — your PM profile
-- `~/.claude/plugins/config/dinp/company-profile.md` — cross-context profile (shared with any future sibling Piper plugins)
+- `~/.claude/plugins/config/dinp/company-profile.md` — a shared cross-context profile
 
-Both are plain-text files you can edit directly for small changes. Re-run with `--redo` to re-interview from scratch (the prior version is backed up).
+Re-run with `--redo` to start over (the prior version is backed up first).
 
-## Design notes (PoC-specific)
+Then try:
+```
+/piper-morgan:ask-piper        e.g. "ask Piper what's the status of issue 1142"
+/piper-morgan:consult-piper    e.g. "ask what I should focus on today"
+```
 
-- **Serial questions, not batched.** This inverts the legal-prior cold-start's batching pattern. The PoC is testing whether serial-decisions actually works as a conversational pattern in plugin form. Either-outcome-is-signal: if it works, basis for refinement; if it doesn't, finding is "batching might be load-bearing for plugin-shape interviews."
-- **PM-profile vocabulary, not founder-profile.** The synthesis spec's earlier draft used "founder-profile"; PM ratified the more general "PM profile" framing on 2026-05-17. Founder-PM is treated as one role-shape among several captured in Q1.2.
-- **No PM-API dependency.** The plugin is self-contained. State lives in the plugin's config files. The "pin to PM-API upstream" mappings from sub-agent 2's analysis are future-direction notes, not built dependencies for this PoC.
-- **Anti-sycophancy in the cold-start itself.** The interview demonstrates the voice rules it's collecting. If the cold-start opens with "Great question!" while collecting the user's anti-sycophancy preference, that's a tell.
+`consult-piper` is the one that shows the payoff loop: watch it notice Piper's gap, gather your GitHub
+issues, and come back with a grounded answer + honest provenance.
 
-## Path conventions
+## What's in this version (v0.2)
 
-The plugin uses `dinp/piper-morgan` as its config path (`~/.claude/plugins/config/<marketplace>/<plugin>/CLAUDE.md`). The marketplace slug is `dinp` (designinproduct — xian's umbrella org); the plugin slug is `piper-morgan`. If the marketplace ships under a different slug later, every reference in the plugin needs the path updated.
+- `.claude-plugin/plugin.json` — manifest
+- `CLAUDE.md` — plugin profile template (populated by `meet-piper`)
+- `skills/meet-piper/`, `skills/ask-piper/`, `skills/consult-piper/` — the three skills
+- `mcp/server.py` + `.mcp.json` — the local MCP server (`ask_piper` tool → Piper's `/api/v1/intent`)
+- `mcp/README.md` — MCP server details + test recipe
 
-## Reporting issues
+## Deliberately not here yet (roadmap, not gaps)
 
-This is a PoC. Findings live in `/Users/xian/Development/piper-morgan-skunkworks/byoc/notes/`. If something doesn't work, the value is in the finding — surface it.
+- Gathering context from sources beyond GitHub (Calendar, Notion, Gmail, Slack) — later increments.
+- A structured "here's exactly what I'm missing" signal from Piper (today `consult-piper` infers the
+  gap from Piper's prose; a structured version comes later).
+- Profile-aware voice shaping; insight-journal and composting features.
+
+These are sequencing choices (build the thin slice, prove it, then extend), not missing pieces.
+
+## Reporting findings
+
+This is a PoC — when something doesn't work, the **finding is the value**. Capture it in
+`byoc/notes/`, or as a tracked issue in the Piper Morgan product repo. Install-path quirks (especially
+on the Desktop/zip path) are exactly the kind of thing worth writing down.

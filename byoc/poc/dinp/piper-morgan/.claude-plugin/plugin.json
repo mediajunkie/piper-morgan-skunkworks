@@ -1,7 +1,7 @@
 {
   "name": "piper-morgan",
-  "version": "0.1.0",
-  "description": "Piper Morgan as a Claude Code plugin: conducts a one-question-at-a-time cold-start interview that learns how YOU work as a PM (calibration, voice, escalation, project portfolio, project pace), writes a per-user PM profile the rest of the plugin's skills read from, and stays out of your way otherwise. PoC scaffold — feature surface grows in subsequent sub-passes.",
+  "version": "0.2.0",
+  "description": "Piper Morgan as a Claude Code plugin: bring your PM assistant into your own chat. Three layered skills over a local MCP server — meet-piper (a one-question-at-a-time interview that learns how YOU work as a PM), ask-piper (relay a question to your locally-running Piper Morgan), and consult-piper (when Piper lacks context to answer, gather it from your GitHub and re-ask, with honest provenance). Requires a local Piper Morgan server (python main.py, :8001). Thin BYOC proof-of-concept.",
   "author": {
     "name": "Piper Morgan skunkworks (PA + subagents)"
   }
