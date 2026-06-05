@@ -7,8 +7,8 @@ User-specific configuration for this plugin lives at a version-independent path 
 
 Rules for every skill, command, and agent in this plugin:
 1. READ configuration from that path. Not from this file.
-2. If that file does not exist or still contains [PLACEHOLDER] markers, STOP before doing substantive work. Say: "This plugin needs setup before it can give you useful output. Run /piper-morgan:cold-start-interview — it takes about 10-15 minutes and every command in this plugin depends on it. Without it, outputs will be generic and may not reflect how you actually work." Do NOT proceed with placeholder or default configuration. The only skill that runs without setup is /piper-morgan:cold-start-interview itself.
-3. Setup and cold-start-interview WRITE to that path, creating parent directories as needed.
+2. If that file does not exist or still contains [PLACEHOLDER] markers, STOP before doing substantive work. Say: "This plugin needs setup before it can give you useful output. Run /piper-morgan:meet-piper — it takes about 10-15 minutes and every command in this plugin depends on it. Without it, outputs will be generic and may not reflect how you actually work." Do NOT proceed with placeholder or default configuration. The only skill that runs without setup is /piper-morgan:meet-piper itself.
+3. Setup and meet-piper (the cold-start interview) WRITE to that path, creating parent directories as needed.
 4. On first run after a plugin update, if a populated CLAUDE.md exists at the old cache path
    (~/.claude/plugins/cache/dinp/piper-morgan/<version>/CLAUDE.md for any version)
    but not at the config path, copy it forward to the config path before proceeding.
@@ -25,7 +25,7 @@ Rules for every skill, command, and agent in this plugin:
 -->
 
 # Piper Morgan PM Profile
-*Written by cold-start on [DATE]. If you see `[PLACEHOLDER]`, run `/piper-morgan:cold-start-interview`.*
+*Written by cold-start on [DATE]. If you see `[PLACEHOLDER]`, run `/piper-morgan:meet-piper`.*
 
 ---
 
@@ -102,7 +102,7 @@ This applies when the plugin produces memo-shaped or message-shaped output (draf
 | [PLACEHOLDER — e.g., GitHub] | [PLACEHOLDER ⚪/✓/✗] | [PLACEHOLDER] |
 | [PLACEHOLDER — e.g., Slack] | [PLACEHOLDER ⚪/✓/✗] | [PLACEHOLDER] |
 
-*Re-check: `/piper-morgan:cold-start-interview --check-integrations` (planned for future sub-pass; not in v0.1).*
+*Re-check: `/piper-morgan:meet-piper --check-integrations` (planned for future sub-pass; not in v0.1).*
 
 Future sub-passes (4.b insight-journal, 4.c composting-via-dreams) will populate this table with concrete connectors. v0.1 leaves it as `[PLACEHOLDER]` — the cold-start can capture user-stated connectors but doesn't probe them for real.
 
@@ -129,4 +129,4 @@ A plugin that gives a worse answer than bare Claude on a question in its own dom
 
 ---
 
-*Re-run: `/piper-morgan:cold-start-interview --redo` (planned; v0.1 supports plain re-run, which detects existing config).*
+*Re-run: `/piper-morgan:meet-piper --redo` (planned; v0.1 supports plain re-run, which detects existing config).*

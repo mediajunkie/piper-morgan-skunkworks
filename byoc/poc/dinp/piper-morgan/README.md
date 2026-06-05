@@ -8,7 +8,7 @@ This is **sub-pass 4.a** of the BYOC PoC build. It ships the plugin scaffold + F
 
 - `.claude-plugin/plugin.json` — plugin manifest
 - `CLAUDE.md` — plugin root template (the structure the cold-start populates, with `[PLACEHOLDER]` markers)
-- `skills/cold-start-interview/SKILL.md` — the single load-bearing skill in v0.1
+- `skills/meet-piper/SKILL.md` — the single load-bearing skill in v0.1
 - `.mcp.json` — empty `mcpServers` shell, ready for sub-pass 4.c to extend
 - `README.md` — this file
 
@@ -46,7 +46,7 @@ source ~/.zshrc
 ## First run
 
 ```
-/piper-morgan:cold-start-interview
+/piper-morgan:meet-piper
 ```
 
 The interview takes ~10-15 minutes. It asks ONE question per turn (serial, not batched) and writes:

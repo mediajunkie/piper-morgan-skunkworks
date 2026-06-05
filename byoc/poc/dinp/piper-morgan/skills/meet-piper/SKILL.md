@@ -1,5 +1,5 @@
 ---
-name: cold-start-interview
+name: meet-piper
 description: >
   Cold-start interview for the piper-morgan plugin. Asks the user ONE question
   at a time (serial, not batched) to learn how they work as a PM — their
@@ -13,7 +13,7 @@ description: >
 argument-hint: "[--redo to re-interview from scratch]"
 ---
 
-# /piper-morgan:cold-start-interview
+# /piper-morgan:meet-piper
 
 This skill is the load-bearing setup step for the piper-morgan plugin. Every other skill in the plugin reads from the PM profile file this skill writes. Without it, the plugin can't give PM-shaped output for this specific user — it can only give generic PM-shaped output.
 
@@ -35,7 +35,7 @@ Check `~/.claude/plugins/config/dinp/piper-morgan/CLAUDE.md`:
 - **Does not exist** → start the interview from the orientation.
 - **Contains `<!-- SETUP PAUSED AT: -->`** → greet the user, name the section they paused at, offer to resume or start over.
 - **Contains `[PLACEHOLDER]` markers but no pause comment** → the template was never completed; offer to start fresh from wherever the placeholders begin.
-- **Populated (no placeholders, no pause comment)** → already configured; tell the user: "You already have a populated PM profile at [path]. Run `/piper-morgan:cold-start-interview --redo` if you want to re-interview from scratch, or edit the file directly for small changes."
+- **Populated (no placeholders, no pause comment)** → already configured; tell the user: "You already have a populated PM profile at [path]. Run `/piper-morgan:meet-piper --redo` if you want to re-interview from scratch, or edit the file directly for small changes."
 
 If `--redo` was passed, ignore the existing file and start fresh. (Make a backup copy first: `cp <path> <path>.bak.$(date +%Y%m%d-%H%M%S)` — don't silently destroy the prior config.)
 
@@ -199,7 +199,7 @@ Before writing the profile file:
 
 After writing, say one of:
 
-- If this was a fresh first install: "Done. Your PM profile is at `~/.claude/plugins/config/dinp/piper-morgan/CLAUDE.md`. Your cross-context profile is at `~/.claude/plugins/config/dinp/company-profile.md`. Both are plain-text files you can edit directly. Re-run `/piper-morgan:cold-start-interview --redo` for a full re-interview. v0.1 of this plugin has no other skills yet — future sub-passes will add `/piper-morgan:journal` (insight journal), `/piper-morgan:reflect` (write to the journal), and `/piper-morgan:compost` (substrate-delegated composting via Anthropic Dreams). The PoC is exercising whether this calibration shape actually holds up before adding feature surface."
+- If this was a fresh first install: "Done. Your PM profile is at `~/.claude/plugins/config/dinp/piper-morgan/CLAUDE.md`. Your cross-context profile is at `~/.claude/plugins/config/dinp/company-profile.md`. Both are plain-text files you can edit directly. Re-run `/piper-morgan:meet-piper --redo` for a full re-interview. v0.1 of this plugin has no other skills yet — future sub-passes will add `/piper-morgan:journal` (insight journal), `/piper-morgan:reflect` (write to the journal), and `/piper-morgan:compost` (substrate-delegated composting via Anthropic Dreams). The PoC is exercising whether this calibration shape actually holds up before adding feature surface."
 
 - If `--redo`: "Done. Your PM profile has been re-written. A backup of the prior version is at [.bak path]."
 
@@ -215,7 +215,7 @@ When writing `~/.claude/plugins/config/dinp/company-profile.md`, use this struct
 
 ```markdown
 # Cross-context profile
-*Written by piper-morgan:cold-start-interview on [DATE]. Shared by any sibling Piper plugins. Edit directly for small changes.*
+*Written by piper-morgan:meet-piper on [DATE]. Shared by any sibling Piper plugins. Edit directly for small changes.*
 
 **Name:** [from Q1.1]
 **Role shape:** [from Q1.2]

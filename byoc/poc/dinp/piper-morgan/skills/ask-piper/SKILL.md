@@ -51,5 +51,5 @@ Keep this skill thin; build the richer behavior as its own increment.
 
 ## Note
 
-The cold-start-interview skill is the setup step that populates the PM profile; this skill does not
+The meet-piper skill (the cold-start interview) is the setup step that populates the PM profile; this skill does not
 depend on it for rung 2 (passthrough needs no profile). Profile-aware behavior arrives in a later rung.
