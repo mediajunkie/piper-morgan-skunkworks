@@ -30,9 +30,11 @@ the question and surfaces the answer faithfully.
    actual words, not your paraphrase.
 2. **Relay Piper's response.** Show the user what Piper said. Don't rewrite it in your own voice — the
    point of asking Piper is to get *Piper's* answer.
-3. **Surface the intent classification.** Piper's response includes how it read the request
-   (category / action / confidence, and whether it hit its floor). Briefly surface that — it tells the
-   user how Piper understood them, which is part of the value.
+3. **Optionally note how Piper understood the request — in PLAIN language.** Piper's response includes
+   internal fields (category / action / confidence / floor_hit / context_keys). These are OUR
+   architecture vocabulary — do NOT show them to the user verbatim. If useful, say in plain words "Piper
+   read this as a priorities question" — but drop the field names. When in doubt, just relay Piper's
+   answer; the classification is rarely what the user came for.
 4. **No silent failures.** If `ask_piper` returns the "couldn't reach Piper" message (the local server
    isn't running), tell the user plainly: the local Piper server isn't up; start it with
    `python main.py` (port 8001), then retry. **Never fabricate a Piper answer** when the server is down.

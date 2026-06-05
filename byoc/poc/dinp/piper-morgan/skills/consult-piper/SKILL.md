@@ -21,6 +21,13 @@ Governing principle: **honesty is the ground; your fluency is the finish.** The 
 provenance-tracked; you elaborate naturally around that honest spine — never fabricate, never launder
 host-gathered data as Piper's own reasoning.
 
+**Plain-language rule (user-facing output):** the words below like *floor*, *floor_hit*, *intent
+classification*, *context keys* are OUR internal architecture vocabulary — for understanding the
+mechanism, NOT for showing the user. When you speak to the user, translate to plain language: "floored"
+→ "Piper didn't have your project info"; "intent classification" → "how Piper understood your question"
+(only if useful); drop `floor_hit` / `context_keys` entirely. Provenance must be not just *visible* but
+*legible* — honesty in normal language, not implementation-speak.
+
 ## Behavioral contract (read every time)
 
 ### 1. Ask Piper first
@@ -40,14 +47,16 @@ projects are you juggling?"*.
 > deliberate — see the scope note. Because it's inference, step 3 makes your interpretation **visible and
 > correctable** rather than silently acting on a guess.
 
-### 3. State your interpretation of the gap — visibly, correctably
-Before gathering, tell the user what you think Piper needs and where you'll get it. E.g.:
+### 3. State your interpretation of the gap — visibly, correctably, in PLAIN language
+Before gathering, tell the user what you think Piper needs and where you'll get it — in normal words, no
+internal jargon. E.g.:
 
-> "Piper floored — it said it doesn't have visibility into your current projects and priorities. I'm
-> reading that as: pull your open GitHub issues. (Tell me if that's not what it meant.)"
+> "Piper didn't have your current project info, so it couldn't point you at anything specific. I'm
+> reading that as: let me pull your open GitHub issues so it can see what's in flight. (Tell me if that's
+> not what you'd want.)"
 
-Keep it one or two sentences. The point is honesty: you're showing your read of Piper's gap, not
-pretending to know it exactly.
+Keep it one or two sentences. The point is honesty: you're showing your read of what Piper was missing,
+not pretending to know it exactly — and saying it the way a colleague would, not the way the code would.
 
 ### 4. Gather exactly that gap (GitHub, for now)
 Pull the user's current open work from GitHub — targeted to the declared gap, not a fishing trip:
@@ -64,16 +73,18 @@ Call `ask_piper` again with the original question **plus** the gathered context 
 > "Here's my current open work: [concise list of the gathered issues]. Given that, what should I focus
 > on today?"
 
-Now Piper has what it floored for, and can give a grounded answer.
+Now Piper has the context it was missing, and can give a grounded answer.
 
-### 6. Present with visible provenance
-Show the user Piper's enriched answer. Make clear **what came from where**:
-- what **Piper** reasoned/recommended,
-- what **you gathered** from GitHub and handed it,
+### 6. Present with visible provenance — in plain language
+Show the user Piper's enriched answer. Make clear **what came from where**, in normal words:
+- what **Piper** recommended (its prioritization/reasoning),
+- what **you gathered** from GitHub and handed to it,
 - any synthesis **you** added on top.
 
-Don't blur these. The user should always be able to see that the grounding came from their own GitHub
-data via the host, and the prioritization reasoning came from Piper.
+Don't blur these — the user should always see that the grounding came from their own GitHub data (via
+you, the host) and the prioritization came from Piper. But say it plainly: "Piper's recommendation… /
+The issue list I pulled for it… / I just formatted the above." No `floor_hit`, no `context_keys`, no
+"intent classification" labels in the output.
 
 ### 7. No silent failures (throughout)
 - Honor `ask_piper`'s failure tags (`SERVER-DOWN`, `PIPER-INTERNAL-ERROR`, `TIMEOUT`, etc.) — relay them
