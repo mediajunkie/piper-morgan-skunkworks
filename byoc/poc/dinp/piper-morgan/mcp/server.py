@@ -2,18 +2,25 @@
 # requires-python = ">=3.10"
 # dependencies = ["mcp>=1.0", "httpx>=0.27"]
 # ///
-"""Piper Morgan BYOC PoC — minimal MCP server (rung 1 of the thin plugin PoC).
+"""Piper Morgan BYOC PoC — MCP server (thin plugin PoC).
 
-Exposes ONE tool, `ask_piper`, that forwards a natural-language message to a
-locally-running Piper Morgan via POST /api/v1/intent (auth-optional, localhost:8001).
-This is the thinnest end-to-end proof of the BYOC stack: skill -> MCP -> real Piper API.
+Tools:
+- ask_piper(message)         — forward a NL message to local Piper /api/v1/intent (rung 1/2/3).
+- get_profile / save_profile — PM profile config, OWNED BY THE SERVER (#1157 fix).
+- get_company_profile / save_company_profile — shared cross-context profile.
 
-Tracking: mediajunkie/piper-morgan-product#1145
-Scope (locked PM 2026-06-03): conversational ask/propose only; Python + uv (PEP-723 inline
-deps, so `uv run server.py` self-bootstraps mcp + httpx — no separate venv).
+Why config lives here (#1157): the plugin used to have the AGENT write config to ~/.claude/...,
+which works in Claude Code (agent owns the FS) but breaks in Cowork (sandboxed FS, no real $HOME).
+The SERVER has normal process FS access on any surface, so it owns config; the agent calls tools.
+The canonical file is kept as a human-editable + down-server-fallback MIRROR.
+
+Tracking: mediajunkie/piper-morgan-product#1145, #1157.
+Python + uv (PEP-723 inline deps; `uv run server.py` self-bootstraps — no venv).
 """
 import json
 import os
+from datetime import datetime, timezone
+from pathlib import Path
 
 import httpx
 from mcp.server.fastmcp import FastMCP
@@ -22,7 +29,54 @@ PIPER_BASE = os.environ.get("PIPER_BASE_URL", "http://localhost:8001")
 INTENT_URL = f"{PIPER_BASE}/api/v1/intent"
 SESSION_ID = "byoc-poc"
 
+# --- Config storage (server-owned; canonical path kept as human-editable mirror) ---
+# Overridable for tests / non-default homes. Default = the canonical plugin config path,
+# which the SERVER can write (normal process FS access) even when the agent can't.
+SCHEMA_VERSION = 1
+CONFIG_ROOT = Path(
+    os.environ.get(
+        "PIPER_CONFIG_ROOT",
+        str(Path.home() / ".claude" / "plugins" / "config" / "dinp"),
+    )
+)
+PROFILE_PATH = CONFIG_ROOT / "piper-morgan" / "CLAUDE.md"
+COMPANY_PROFILE_PATH = CONFIG_ROOT / "company-profile.md"
+PLACEHOLDER_MARKER = "[PLACEHOLDER]"
+
 mcp = FastMCP("piper-morgan")
+
+
+# --- Config helpers (shared by the profile tools) ---
+def _read_profile(path: Path, label: str) -> str:
+    """Read a profile file; return a clear not-configured signal instead of raising."""
+    try:
+        if not path.exists():
+            return (
+                f"[{label}: NOT-CONFIGURED] No profile found at {path}. "
+                f"Run /piper-morgan:meet-piper to create one."
+            )
+        text = path.read_text(encoding="utf-8")
+    except Exception as e:  # noqa: BLE001 — report plainly rather than crash the tool
+        return f"[{label}: READ-ERROR] {type(e).__name__}: {e} (path: {path})"
+    if not text.strip():
+        return f"[{label}: EMPTY] File exists but is empty: {path}. Run /piper-morgan:meet-piper."
+    if PLACEHOLDER_MARKER in text:
+        return f"[{label}: HAS-PLACEHOLDERS] Profile exists but is incomplete:\n\n{text}"
+    return text
+
+
+def _write_profile(path: Path, content: str, label: str) -> str:
+    """Write a profile file (server-owned); back up any prior version; report plainly."""
+    try:
+        path.parent.mkdir(parents=True, exist_ok=True)
+        if path.exists():
+            stamp = datetime.now(timezone.utc).strftime("%Y%m%d-%H%M%S")
+            backup = path.with_suffix(path.suffix + f".bak.{stamp}")
+            backup.write_text(path.read_text(encoding="utf-8"), encoding="utf-8")
+        path.write_text(content, encoding="utf-8")
+    except Exception as e:  # noqa: BLE001
+        return f"[{label}: WRITE-ERROR] {type(e).__name__}: {e} (path: {path})"
+    return f"[{label}: SAVED] Wrote {len(content)} chars to {path} (schema v{SCHEMA_VERSION})."
 
 
 @mcp.tool()
@@ -113,6 +167,47 @@ async def ask_piper(message: str) -> str:
         parts.append(f"\n\n[intent: {intent}]")
     parts.append("\n\n--- full /intent response ---\n" + json.dumps(data, indent=2)[:2000])
     return "".join(parts)
+
+
+# --- Config tools (server-owned config; the #1157 fix) ---
+
+@mcp.tool()
+async def get_profile() -> str:
+    """Return the user's Piper Morgan PM profile (how they work as a PM).
+
+    Call this at the start of meet-piper (to check if setup is needed) and from any skill
+    that wants the user's calibration. Returns the profile content, or a clear
+    NOT-CONFIGURED / HAS-PLACEHOLDERS / EMPTY signal if setup hasn't completed — so the
+    caller can route to /piper-morgan:meet-piper instead of guessing. Works on any surface
+    (the server reads the file; the agent never needs filesystem access to ~/.claude).
+    """
+    return _read_profile(PROFILE_PATH, "profile")
+
+
+@mcp.tool()
+async def save_profile(content: str) -> str:
+    """Persist the user's Piper Morgan PM profile. Call this at the END of meet-piper
+    instead of writing a file directly — the server owns the write, so it works on any
+    surface (Cowork included, where the agent can't reach ~/.claude). Backs up any prior
+    version first. Pass the full profile markdown (mirror the plugin's CLAUDE.md template).
+    """
+    return _write_profile(PROFILE_PATH, content, "profile")
+
+
+@mcp.tool()
+async def get_company_profile() -> str:
+    """Return the shared cross-context company profile (reused by any sibling Piper plugins).
+    Same NOT-CONFIGURED / HAS-PLACEHOLDERS signaling as get_profile.
+    """
+    return _read_profile(COMPANY_PROFILE_PATH, "company-profile")
+
+
+@mcp.tool()
+async def save_company_profile(content: str) -> str:
+    """Persist the shared cross-context company profile. Server-owned write (works on any
+    surface); backs up any prior version. Pass the full company-profile markdown.
+    """
+    return _write_profile(COMPANY_PROFILE_PATH, content, "company-profile")
 
 
 if __name__ == "__main__":
