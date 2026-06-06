@@ -1,9 +1,9 @@
 {
   "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
   "name": "dinp",
-  "description": "Design In Product (xian's umbrella org) — Piper Morgan skunkworks plugins. PoC marketplace; not for distribution beyond xian's own testing.",
+  "description": "Design in Product plugin marketplace (xian's umbrella org). Hosts PM-shaped and product-ops Claude plugins. Live: piper-morgan. Planned siblings: klatch, cross-pollinator. Sibling plugins share a cross-context company profile at ~/.claude/plugins/config/dinp/company-profile.md. Currently skunkworks-staged; designed to graduate to a hosted marketplace.",
   "owner": {
-    "name": "Design In Product (xian)"
+    "name": "Design in Product (xian)"
   },
   "plugins": [
     {
@@ -12,7 +12,7 @@
         "source": "local",
         "path": "./piper-morgan"
       },
-      "description": "Piper Morgan as a Claude Code plugin: conducts a one-question-at-a-time cold-start interview that learns how YOU work as a PM (calibration, voice, escalation, project portfolio, project pace), writes a per-user PM profile the rest of the plugin's skills read from, and stays out of your way otherwise. PoC scaffold — feature surface grows in subsequent sub-passes.",
+      "description": "Piper Morgan as a Claude plugin (BYOC PoC): three layered skills over a local MCP server. meet-piper learns how YOU work as a PM (two-mode: serial cold-start interview on first install, compact scoped update on return); ask-piper relays a question to your local Piper; consult-piper gathers missing context from GitHub and re-asks with honest provenance. Server-owned config works on every surface. Requires a local Piper Morgan server.",
       "author": {
         "name": "Piper Morgan skunkworks (PA + subagents)"
       }
