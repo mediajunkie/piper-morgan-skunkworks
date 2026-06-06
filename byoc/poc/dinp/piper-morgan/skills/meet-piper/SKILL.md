@@ -4,12 +4,11 @@ description: >
   Cold-start interview for the piper-morgan plugin. Asks the user ONE question
   at a time (serial, not batched) to learn how they work as a PM — their
   voice/posture rules, project portfolio, decision-making patterns, routing
-  conventions — and writes the populated PM profile to
-  ~/.claude/plugins/config/dinp/piper-morgan/CLAUDE.md, plus (if first
-  install) the shared company profile at
-  ~/.claude/plugins/config/dinp/company-profile.md. Run this on fresh
-  install, when the plugin config has placeholders, or any time the profile
-  feels stale.
+  conventions — and saves the populated PM profile (plus, on first install, the
+  shared company profile) via the Piper MCP server's save_profile /
+  save_company_profile tools, so setup works on any surface (Claude Code AND
+  Cowork). Run this on fresh install, when the profile has placeholders, or any
+  time the profile feels stale.
 argument-hint: "[--redo to re-interview from scratch]"
 ---
 
@@ -30,25 +29,28 @@ This skill **MUST** honor these rules, even when conducting the interview feels 
 
 ## Cold-start check (run this first)
 
-Check `~/.claude/plugins/config/dinp/piper-morgan/CLAUDE.md`:
+**Call the `get_profile` MCP tool** (do NOT read `~/.claude/...` directly — config is owned by the
+Piper MCP server now, so this works on every surface including Cowork; the agent never needs filesystem
+access to the user's home). Interpret the result:
 
-- **Does not exist** → start the interview from the orientation.
-- **Contains `<!-- SETUP PAUSED AT: -->`** → greet the user, name the section they paused at, offer to resume or start over.
-- **Contains `[PLACEHOLDER]` markers but no pause comment** → the template was never completed; offer to start fresh from wherever the placeholders begin.
-- **Populated (no placeholders, no pause comment)** → already configured; tell the user: "You already have a populated PM profile at [path]. Run `/piper-morgan:meet-piper --redo` if you want to re-interview from scratch, or edit the file directly for small changes."
+- **`[profile: NOT-CONFIGURED]`** → start the interview from the orientation.
+- **Result contains `<!-- SETUP PAUSED AT: -->`** → greet the user, name the section they paused at, offer to resume or start over.
+- **`[profile: HAS-PLACEHOLDERS]`** → the template was never completed; offer to start fresh from wherever the placeholders begin.
+- **Populated profile content (no placeholders, no pause comment)** → already configured; tell the user: "You already have a populated PM profile. Run `/piper-morgan:meet-piper --redo` to re-interview from scratch, or edit it directly for small changes."
 
-If `--redo` was passed, ignore the existing file and start fresh. (Make a backup copy first: `cp <path> <path>.bak.$(date +%Y%m%d-%H%M%S)` — don't silently destroy the prior config.)
+If `--redo` was passed, ignore the existing profile and start fresh. (`save_profile` automatically backs
+up the prior version, so a redo never silently destroys the old config.)
 
-## Migration check
-
-If a populated CLAUDE.md (no `[PLACEHOLDER]` markers) exists at `~/.claude/plugins/cache/dinp/piper-morgan/*/CLAUDE.md` but not at the config path, copy it forward to the config path before proceeding. Show the user a one-line summary of what was migrated.
+> Requires the Piper MCP server to be running (it serves these tools + `ask_piper`). If `get_profile`
+> isn't available, tell the user the local Piper server isn't connected and setup needs it — don't fall
+> back to writing files directly (that's the portability bug this design fixes).
 
 ## Shared company profile check
 
-Look for `~/.claude/plugins/config/dinp/company-profile.md`.
+**Call the `get_company_profile` MCP tool.**
 
-- **If it exists:** Read it. Show a one-line confirmation: "You're [name], working on [primary projects]. Right? (Say 'update' to revise.)" If confirmed, skip the cross-context identity questions — go straight to the plugin-specific ones.
-- **If it doesn't exist:** This is the first piper-morgan-marketplace plugin the user has set up. After the orientation, ask the cross-context questions and write them to the shared profile (template below), then continue with the plugin-specific questions. Tell the user: "I've saved your cross-context profile to [path] — any sibling Piper plugins you install later will read it and skip these questions."
+- **Returns populated content:** Show a one-line confirmation: "You're [name], working on [primary projects]. Right? (Say 'update' to revise.)" If confirmed, skip the cross-context identity questions — go straight to the plugin-specific ones.
+- **Returns `[company-profile: NOT-CONFIGURED]`:** This is the first piper-morgan-marketplace plugin the user has set up. After the orientation, ask the cross-context questions and save them via `save_company_profile` (template below), then continue with the plugin-specific questions. Tell the user: "I've saved your cross-context profile — any sibling Piper plugins you install later will read it and skip these questions."
 
 The cross-context questions that belong in the shared profile (and should NOT be re-asked if it exists): name, role-shape, working-style-in-one-line, primary attention, sibling projects.
 
@@ -70,9 +72,9 @@ The plugin-specific questions that stay per-plugin: voice/posture rules, decisio
 
 Wait for the user's response. Do not show the first question until they've said go.
 
-## Part 1 — Cross-context identity (skip if company-profile.md exists)
+## Part 1 — Cross-context identity (skip if a company profile already exists, per the check above)
 
-These five questions go to `~/.claude/plugins/config/dinp/company-profile.md` and will be reused by any sibling plugins.
+These five questions are saved via `save_company_profile` and will be reused by any sibling plugins.
 
 **Q1.1.** What name should I use for you? (First name is fine; or whatever you'd want a colleague to call you.)
 
@@ -105,7 +107,7 @@ I'm asking because the rest of the plugin's defaults shift slightly by role shap
 
 → wait for answer; record as `project_portfolio`. Capture both the list AND which has primary attention.
 
-→ Before continuing: write Q1.1-Q1.5 to `~/.claude/plugins/config/dinp/company-profile.md` (template at the end of this skill). Confirm to the user: "Saved your cross-context profile. Any sibling Piper plugins you install will read it." Then continue.
+→ Before continuing: **call `save_company_profile`** with the Q1.1-Q1.5 content (template at the end of this skill). Confirm to the user: "Saved your cross-context profile. Any sibling Piper plugins you install will read it." Then continue. (The server owns the write — no filesystem access needed; works on Cowork.)
 
 ## Part 2 — Voice and posture rules (the load-bearing section)
 
@@ -185,25 +187,25 @@ This part may not apply if the user is a solo founder who doesn't deal with form
 
 → Surface honestly: "v0.1 of this plugin records what you named but doesn't probe whether the connectors are actually wired up. Future sub-passes will add real probing. The plugin will fall back to manual / paste-the-content workflows for anything that isn't actually wired."
 
-## Part 7 — Confirm and write
+## Part 7 — Confirm and save
 
-Before writing the profile file:
+Before saving the profile:
 
 1. Show the user a summary of what was captured, organized by the profile's section structure. Use the headings from the template. Skipped/N-A sections shown as `[SKIPPED]` or `[N/A — reason]`, not as if nobody asked.
-2. Ask: "Does this look right? Anything to change before I write `~/.claude/plugins/config/dinp/piper-morgan/CLAUDE.md`?"
+2. Ask: "Does this look right? Anything to change before I save your PM profile?"
 3. Apply any edits the user requests. Re-confirm after edits.
-4. On user go-ahead, write the file (create parent directories as needed). Use the template structure from the plugin's root `CLAUDE.md`, with the user's answers substituted for `[PLACEHOLDER]` markers.
-5. Tell the user where the file landed (absolute path, clickable) and that they can edit it directly for small changes.
+4. On user go-ahead, **call `save_profile`** with the full profile content. Build it from the plugin's root `CLAUDE.md` template structure, substituting the user's answers for `[PLACEHOLDER]` markers. (The server owns the write + backs up any prior version — works on every surface, no filesystem access needed. This is the #1157 fix: meet-piper completes in Cowork now.)
+5. Confirm to the user that the profile is saved and that they can edit it directly for small changes (the server keeps it as a human-editable file).
 
 ## Part 8 — Close
 
-After writing, say one of:
+After saving, say one of:
 
-- If this was a fresh first install: "Done. Your PM profile is at `~/.claude/plugins/config/dinp/piper-morgan/CLAUDE.md`. Your cross-context profile is at `~/.claude/plugins/config/dinp/company-profile.md`. Both are plain-text files you can edit directly. Re-run `/piper-morgan:meet-piper --redo` for a full re-interview. v0.1 of this plugin has no other skills yet — future sub-passes will add `/piper-morgan:journal` (insight journal), `/piper-morgan:reflect` (write to the journal), and `/piper-morgan:compost` (substrate-delegated composting via Anthropic Dreams). The PoC is exercising whether this calibration shape actually holds up before adding feature surface."
+- If this was a fresh first install: "Done — your PM profile is saved (the Piper server keeps it as a plain-text file you can edit directly). Re-run `/piper-morgan:meet-piper --redo` for a full re-interview. Two more skills are ready to use now: `/piper-morgan:ask-piper` (relay a question to Piper) and `/piper-morgan:consult-piper` (Piper + I gather context when it's missing). Future sub-passes will add journaling + composting."
 
-- If `--redo`: "Done. Your PM profile has been re-written. A backup of the prior version is at [.bak path]."
+- If `--redo`: "Done — your PM profile has been re-saved. The server backed up the prior version automatically."
 
-Then: "One thing I'd flag — this is v0.1 of a PoC. The plugin's value lives in the calibration the cold-start writes; subsequent sub-passes add features that consume it. If the calibration feels off, the fix is here, not in the downstream skills (which don't exist yet)."
+Then: "One note — this is a PoC. The plugin's value lives in the calibration this interview captures; the other skills (ask-piper, consult-piper) consume it. If the calibration feels off, the fix is here."
 
 ---
 
@@ -211,7 +213,7 @@ Then: "One thing I'd flag — this is v0.1 of a PoC. The plugin's value lives in
 
 ## Company profile template
 
-When writing `~/.claude/plugins/config/dinp/company-profile.md`, use this structure:
+Pass this structure as the `content` to `save_company_profile`:
 
 ```markdown
 # Cross-context profile
@@ -229,7 +231,7 @@ When writing `~/.claude/plugins/config/dinp/company-profile.md`, use this struct
 
 ## PM profile template
 
-When writing `~/.claude/plugins/config/dinp/piper-morgan/CLAUDE.md`, mirror the structure of the plugin's root `CLAUDE.md` template (the one this skill is shipped alongside), substituting the user's answers for the `[PLACEHOLDER]` markers. Preserve the CONFIGURATION LOCATION HTML comment block at the top — every skill in the plugin depends on it.
+Pass to `save_profile` as `content`: mirror the structure of the plugin's root `CLAUDE.md` template (the one this skill is shipped alongside), substituting the user's answers for the `[PLACEHOLDER]` markers. Preserve the CONFIGURATION LOCATION HTML comment block at the top — every skill in the plugin depends on it.
 
 For sections where the user said "N/A" or skipped, write `[N/A — <reason>]` or `[SKIPPED — user declined at <date>]` rather than leaving `[PLACEHOLDER]` (which would trigger the cold-start prompt again on next skill run).
 
