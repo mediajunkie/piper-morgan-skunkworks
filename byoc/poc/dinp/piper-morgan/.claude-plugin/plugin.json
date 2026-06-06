@@ -1,7 +1,7 @@
 {
   "name": "piper-morgan",
-  "version": "0.3.0",
-  "description": "Piper Morgan as a Claude Code / Claude Desktop plugin: bring your PM assistant into your own chat. Three layered skills over a local MCP server — meet-piper (a one-question-at-a-time interview that learns how YOU work as a PM; the profile is owned by the MCP server so setup works on every surface incl. Cowork), ask-piper (relay a question to your locally-running Piper Morgan), and consult-piper (when Piper lacks context, gather it from your GitHub and re-ask, with honest provenance). Requires a local Piper Morgan server (python main.py, :8001). Thin BYOC proof-of-concept.",
+  "version": "0.3.1",
+  "description": "Bring your PM assistant into your own chat. Three layered skills over a local MCP server: meet-piper (learns how you work as a PM), ask-piper (relay a question to your local Piper Morgan), consult-piper (gather missing context from GitHub and re-ask, with honest provenance). Server-owned config works on every surface. Requires a local Piper Morgan server. Thin BYOC PoC.",
   "author": {
     "name": "Piper Morgan skunkworks (PA + subagents)"
   }
