@@ -1,4 +1,10 @@
-# Piper Morgan plugin (BYOC PoC v0.2)
+# Piper Morgan plugin (BYOC PoC v0.3)
+
+> **v0.3 change — config is now owned by the MCP server.** `meet-piper` saves your profile via server
+> tools (`save_profile` / `save_company_profile`) instead of the agent writing to `~/.claude` directly.
+> This makes setup work on **every surface, including Cowork** (where the agent can't reach your home
+> filesystem). The profile is still kept as a human-editable file you can edit directly.
+
 
 **Bring your PM assistant into your own chat.** This is a thin proof-of-concept that packages Piper
 Morgan — a product-management assistant — as a Claude Code / Claude Desktop plugin: three small skills
