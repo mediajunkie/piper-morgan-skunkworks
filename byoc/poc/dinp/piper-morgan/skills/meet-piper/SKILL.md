@@ -1,49 +1,146 @@
 ---
 name: meet-piper
 description: >
-  Cold-start interview for the piper-morgan plugin. Asks the user ONE question
-  at a time (serial, not batched) to learn how they work as a PM — their
-  voice/posture rules, project portfolio, decision-making patterns, routing
-  conventions — and saves the populated PM profile (plus, on first install, the
-  shared company profile) via the Piper MCP server's save_profile /
-  save_company_profile tools, so setup works on any surface (Claude Code AND
-  Cowork). Run this on fresh install, when the profile has placeholders, or any
-  time the profile feels stale.
-argument-hint: "[--redo to re-interview from scratch]"
+  Setup and maintenance for the piper-morgan plugin's PM profile. On a fresh
+  install it runs a serial, one-question-at-a-time cold-start interview to learn
+  how you work as a PM — voice/posture rules, project portfolio, decision-making
+  patterns, routing conventions. On a returning (already-configured) user it
+  switches to maintenance mode: a compact, scoped update of just the sections
+  that drifted, using a form where the surface offers one. Saves the PM profile
+  (plus, on first install, the shared company profile) via the Piper MCP server's
+  save_profile / save_company_profile tools, so it works on every surface (Claude
+  Code AND Cowork). Run on fresh install, when the profile has real placeholders,
+  to patch a section, or any time the profile feels stale.
+argument-hint: "[--redo re-interview from scratch | --update [section] patch one section]"
 ---
 
 # /piper-morgan:meet-piper
 
 This skill is the load-bearing setup step for the piper-morgan plugin. Every other skill in the plugin reads from the PM profile file this skill writes. Without it, the plugin can't give PM-shaped output for this specific user — it can only give generic PM-shaped output.
 
-## Behavioral contract (read every time the skill runs)
+## Two modes — name the split, don't arbitrate it silently
 
-This skill **MUST** honor these rules, even when conducting the interview feels like it would be faster to break them. The whole point of the skill is to demonstrate to the user, in the conduct of the interview itself, the voice rules the rest of the plugin will honor.
+This skill has **two distinct shapes**, and most invocations after install are the second one:
 
-1. **One question per turn.** Ask the user a single salient question, wait for the answer, capture it, then move to the next. Sub-topics within a topic also serial. **Never** present 2-3 questions and ask the user to "answer in any order." This inverts the legal-prior cold-start's batching pattern by design.
-2. **Anti-sycophancy in the interview itself.** Do not open with "Great question!", "You're absolutely right!", or any affirmation-of-the-user's-character framing. State what you heard, confirm if useful, ask the next question. The user will read sycophancy in the interview as evidence the plugin doesn't actually honor the voice rules it's collecting.
-3. **No silent failures in the interview.** If the user skips a question, mark it explicitly as `[SKIPPED — user declined]` in the profile, not as a placeholder that looks like nobody asked. If a question doesn't apply to this user's PM shape (e.g., "who escalates above you" for a solo founder), say so and capture `[N/A — solo, no hierarchy]` rather than forcing an answer.
-4. **Don't read the user's personal memory or home-directory CLAUDE.md to pre-populate the interview.** The only inputs are typed answers and documents the user explicitly points at. Setup builds a fresh PM profile from what the user tells THIS plugin, not from inferred context.
-5. **Pause and resume.** Tell the user up front: "If you need to stop, say 'pause' (or 'stop', or 'come back to this') and I'll save your progress." When the user pauses, write a partial config with a `<!-- SETUP PAUSED AT: [section] -->` comment at the top and `[PENDING]` markers on unanswered fields. When the skill re-runs and finds a paused config, greet: "You paused at [section]. Pick up there, or start over?"
-6. **Verify before writing.** Before writing the profile file, show the user a summary of what was captured. Ask: "Does this look right? Anything to change before I write it?" Only write on the user's go-ahead.
+- **Cold start** (fresh install / `--redo` / genuine placeholders / resumed pause): the full **serial,
+  one-question-at-a-time** interview. Serial is right here because the interview *demonstrates* the
+  voice rule it's collecting — the conduct of the interview is part of the calibration.
+- **Maintenance** (already-configured user, no `--redo`): a **compact, scoped update** of just the
+  sections that drifted. Serial-one-at-a-time is too heavy for patching one thing; use a **form** where
+  the surface offers an elicitation affordance (Desktop/Cowork), or a compact serial pass where it
+  doesn't (CLI).
 
-## Cold-start check (run this first)
+If a surface elicitation hook says "use a form" and this skill's cold-start text says "always serial,"
+that is **not** a contradiction to silently arbitrate: **form wins for maintenance, serial wins for
+cold start.** The "Mode routing" step below decides which you're in; honor that mode's contract.
+
+## Behavioral contract
+
+These rules are **always** honored (both modes):
+
+- **Anti-sycophancy.** Do not open with "Great question!", "You're absolutely right!", or any
+  affirmation-of-the-user's-character framing. State what you heard, confirm if useful, move on. The
+  user will read sycophancy as evidence the plugin doesn't honor the voice rules it collects.
+- **No silent failures.** If the user skips a field, mark it explicitly (`[SKIPPED — user declined]`);
+  if a field doesn't apply (e.g., escalation for a solo founder), capture `[N/A — reason]` rather than
+  forcing an answer or leaving something that looks unasked.
+- **Don't pre-populate from inferred context.** Don't read the user's personal memory or
+  home-directory `CLAUDE.md` to fill answers. The only inputs are typed answers and documents the user
+  explicitly points at.
+- **Pause and resume.** Tell the user they can say "pause" / "stop" / "come back to this." On pause,
+  save a partial profile with `<!-- SETUP PAUSED AT: [section] -->` at the top and `[PENDING]` on
+  unanswered fields. A later run that finds a pause comment greets: "You paused at [section]. Resume or
+  start over?"
+
+These two rules are **mode-aware** (this is the reconciliation of the confirm-vs-bias-to-action tension):
+
+- **Question cadence.**
+  - *Cold start:* **one question per turn**, sub-topics also serial. Never batch 2-3 and ask the user
+    to "answer in any order." The serial cadence is itself part of the calibration demo.
+  - *Maintenance:* prefer a **compact form** (core items shown, deeper sections revealed on request)
+    where the surface supports elicitation; otherwise a brief serial pass over just the changed
+    section(s). Don't re-run the whole 15-minute interview to patch one field.
+- **Write contract.**
+  - *Cold start:* **confirm before writing.** Show the captured summary, ask "does this look right?",
+    write only on the user's go-ahead. (A fresh profile reflects ~15 min of input; the confirm step
+    also demonstrates the carefulness the interview is about.)
+  - *Maintenance:* the write is **reversible** — `save_profile` auto-backs-up the prior version — so if
+    the user's own profile asserts a bias-to-action / don't-wait-for-a-nod posture, **write the change,
+    then show the diff and invite correction**, rather than gating on a nod. Honor the user's stated
+    posture; don't impose a confirm gate the user has explicitly said they don't want. (If the profile
+    says the opposite — confirm-first — then confirm first, even in maintenance.)
+
+## Mode routing (run this first)
 
 **Call the `get_profile` MCP tool** (do NOT read `~/.claude/...` directly — config is owned by the
 Piper MCP server now, so this works on every surface including Cowork; the agent never needs filesystem
-access to the user's home). Interpret the result:
+access to the user's home). Then route:
 
-- **`[profile: NOT-CONFIGURED]`** → start the interview from the orientation.
-- **Result contains `<!-- SETUP PAUSED AT: -->`** → greet the user, name the section they paused at, offer to resume or start over.
-- **`[profile: HAS-PLACEHOLDERS]`** → the template was never completed; offer to start fresh from wherever the placeholders begin.
-- **Populated profile content (no placeholders, no pause comment)** → already configured; tell the user: "You already have a populated PM profile. Run `/piper-morgan:meet-piper --redo` to re-interview from scratch, or edit it directly for small changes."
-
-If `--redo` was passed, ignore the existing profile and start fresh. (`save_profile` automatically backs
-up the prior version, so a redo never silently destroys the old config.)
+- **`--redo` passed** → **cold start.** Ignore the existing profile, start fresh from the orientation.
+  (`save_profile` backs up the prior version, so a redo never silently destroys the old config.)
+- **`--update [section]` passed** (and a populated profile exists) → **maintenance**, jumping straight
+  to that section. See the Maintenance-mode section.
+- **`[profile: NOT-CONFIGURED]`** → **cold start** from the orientation.
+- **Result contains `<!-- SETUP PAUSED AT: -->`** → greet, name the paused section, offer resume or
+  start-over (a resume continues the **cold-start** serial flow).
+- **`[profile: HAS-PLACEHOLDERS]`** → genuine unfilled fields remain → **cold start**, offering to start
+  fresh from wherever the placeholders begin. (Note: the server now distinguishes *real* placeholders
+  from the template's own instructional mentions of the token, so this no longer false-fires on a
+  complete profile.)
+- **Populated profile (no placeholders, no pause comment), no `--redo`** → **maintenance.** Do NOT
+  dead-end at "run `--redo` or edit by hand." Go to the Maintenance-mode section and offer a scoped
+  update.
 
 > Requires the Piper MCP server to be running (it serves these tools + `ask_piper`). If `get_profile`
 > isn't available, tell the user the local Piper server isn't connected and setup needs it — don't fall
 > back to writing files directly (that's the portability bug this design fixes).
+
+# Maintenance mode (returning, already-configured user)
+
+This is the common case after install: the profile exists and the user wants to patch what drifted, not
+re-do the whole interview. Keep it light.
+
+1. **Orient in one line, honestly.** Read the profile you already fetched. Say what's current and flag
+   staleness if you see it — e.g., "You're configured; profile last patched [date from the provenance
+   line]. Anything changed?" If a date or a fact looks out of step with what the user just said, name it
+   (no silent failures) and offer that section as the likely thing to update.
+
+2. **Offer a scoped update — compact, not the full interview.**
+   - If the surface offers a **form / elicitation affordance** (Desktop, Cowork): present a **compact
+     form** showing the **core, most-drift-prone items** — project portfolio / primary attention /
+     project pace — with the deeper sections (voice rules, decision-making, routing, integrations)
+     available only if the user asks to expand them. This is the progressive-disclosure shape: core
+     shown, rest on request.
+   - If the surface has **no form affordance** (CLI): ask a brief serial pass over just the section(s)
+     the user names — not all six parts. Drop the demonstrative "one question at a time, here's why"
+     framing; the user has already seen it.
+   - If `--update [section]` was passed, jump straight to that section.
+
+3. **Route each change to the right file.** Identity / role-shape / portfolio / primary-attention /
+   sibling-projects live in the **company profile** (`save_company_profile`) — shared by sibling Piper
+   plugins. Voice rules, decision-making, routing/CC, integrations live in the **PM profile**
+   (`save_profile`). A single update can touch both (e.g., re-framing a client as an "anchor client"
+   updates the portfolio in *both* files). Update only the files that actually changed.
+
+4. **Preserve everything you didn't touch.** Rebuild the file from the existing content with only the
+   changed fields replaced. Keep the CONFIGURATION-LOCATION HTML comment block verbatim. Update the
+   provenance line's "patched [date]" stamp so the next maintenance run can orient. Do not drop sections
+   the user didn't mention.
+
+5. **Write per the maintenance write contract** (see Behavioral contract). The write is reversible
+   (auto-backup), so if the profile asserts a bias-to-action posture: **write, then show the diff and
+   invite correction** rather than gating on a nod. If the profile asks for confirm-first, confirm first.
+
+6. **Close briefly.** State what changed (scoped to what the user gave), note that the prior versions
+   were backed up automatically, and stop. No re-litigating untouched sections.
+
+> Why a separate mode: serial-one-at-a-time earns its keep in cold start because it *demonstrates* the
+> voice rule it's collecting. For a returning user patching one field it's pure friction. Same skill,
+> two shapes — matched to whether the user is being onboarded or doing maintenance.
+
+---
+
+# Cold-start interview (fresh install / `--redo` / resumed pause / genuine placeholders)
 
 ## Shared company profile check
 
@@ -57,8 +154,6 @@ The cross-context questions that belong in the shared profile (and should NOT be
 The plugin-specific questions that stay per-plugin: voice/posture rules, decision-making and escalation, routing/CC discipline, integrations.
 
 ---
-
-# The interview
 
 ## Orientation (show this first; wait for the user before continuing)
 
@@ -239,8 +334,9 @@ For sections where the user said "N/A" or skipped, write `[N/A — <reason>]` or
 
 # Failure modes for the skill itself
 
-- **Don't batch even when it feels efficient.** If you find yourself wanting to ask 2-3 related questions in one turn "to save the user time," stop. The whole point is to honor the rule. The user will read batching in the interview as evidence the plugin doesn't honor its own rules.
-- **Don't invent answers.** If a user gives a thin or ambiguous answer, ask a follow-up (still serial) rather than filling in the gap with what you think they probably meant. The user's exact phrasing is often load-bearing for downstream skills.
+- **In cold start, don't batch even when it feels efficient.** If you find yourself wanting to ask 2-3 related questions in one turn "to save time," stop — the serial cadence is part of the calibration demo. (In *maintenance* a compact form/serial-pass is correct; this bullet is about the cold-start interview.)
+- **Don't invent answers.** If a user gives a thin or ambiguous answer, ask a follow-up rather than filling in the gap with what you think they probably meant. The user's exact phrasing is often load-bearing for downstream skills.
 - **Don't pretend to verify what you can't verify.** Integrations are user-named, not probed, in v0.1. Say so.
 - **Don't read the user's home-directory `~/CLAUDE.md` or other personal memory to pre-populate the interview.** The skill builds a fresh PM profile from typed answers. Pre-populating from inferred context defeats the calibration exercise.
-- **Don't skip the confirm-before-write step.** Writing the profile file without showing the user what's about to be written is a silent failure of exactly the type the user's voice rules forbid.
+- **Don't apply the wrong mode's write contract.** In cold start, never write the profile without showing the captured summary first — silent write of a fresh profile is the exact failure the voice rules forbid. In maintenance, the inverse risk: don't impose a confirm-gate the user's own bias-to-action profile has told you to skip — write the reversible change and show the diff. Match the contract to the mode (see Behavioral contract).
+- **Don't re-run the full interview to patch one field.** A returning user who wants to update one section should get a scoped update, not all six parts. Routing a populated profile into the cold-start interview (absent `--redo`) is the maintenance-gap failure this version fixes.

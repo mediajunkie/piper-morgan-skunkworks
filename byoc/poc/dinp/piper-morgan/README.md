@@ -22,7 +22,7 @@ don't need a separate Piper app — you talk to Piper inside the Claude you alre
 
 | Skill | What it does |
 |---|---|
-| **`/piper-morgan:meet-piper`** | A one-question-at-a-time interview that learns how *you* work as a PM (voice, escalation, project portfolio, pace) and writes it to a profile the plugin reuses. Run this first. |
+| **`/piper-morgan:meet-piper`** | Two-mode setup/maintenance. **First install:** a one-question-at-a-time interview that learns how *you* work as a PM (voice, escalation, project portfolio, pace) and writes it to a profile the plugin reuses — run this first. **Return visit:** a compact, scoped update of just the section that drifted (a form where the surface offers one); `--update [section]` jumps straight there, `--redo` re-interviews from scratch. |
 | **`/piper-morgan:ask-piper`** | Relays a single PM question to your locally-running Piper and shows you Piper's own answer. Thin and literal — a quick consult. |
 | **`/piper-morgan:consult-piper`** | The fuller working session: asks Piper, and if Piper says it lacks the context to answer (e.g. "I don't have your current projects"), it gathers exactly that from your GitHub, re-asks Piper, and gives you a grounded answer — clearly labeling what came from Piper vs. what it gathered for you. |
 
