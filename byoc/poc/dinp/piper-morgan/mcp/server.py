@@ -19,6 +19,7 @@ Python + uv (PEP-723 inline deps; `uv run server.py` self-bootstraps — no venv
 """
 import json
 import os
+import re
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -60,9 +61,25 @@ def _read_profile(path: Path, label: str) -> str:
         return f"[{label}: READ-ERROR] {type(e).__name__}: {e} (path: {path})"
     if not text.strip():
         return f"[{label}: EMPTY] File exists but is empty: {path}. Run /piper-morgan:meet-piper."
-    if PLACEHOLDER_MARKER in text:
+    if _has_real_placeholders(text):
         return f"[{label}: HAS-PLACEHOLDERS] Profile exists but is incomplete:\n\n{text}"
     return text
+
+
+def _has_real_placeholders(text: str) -> bool:
+    """True only if the marker appears as an actual unfilled field value.
+
+    The shipped template's CONFIGURATION-LOCATION comment block and the italic
+    subtitle both *mention* the literal token in instructional prose ("If you see
+    `[PLACEHOLDER]`, run ...", "still contains [PLACEHOLDER] markers"). The skill
+    requires preserving that comment block, so a naive `MARKER in text` check
+    false-positives on every fully-populated profile. Strip HTML comments and
+    inline-code spans first; a genuine unfilled field (e.g. `**Name:** [PLACEHOLDER]`)
+    lives in neither and is still detected.
+    """
+    stripped = re.sub(r"<!--.*?-->", "", text, flags=re.DOTALL)  # HTML comment blocks
+    stripped = re.sub(r"`[^`]*`", "", stripped)                   # inline-code spans
+    return PLACEHOLDER_MARKER in stripped
 
 
 def _write_profile(path: Path, content: str, label: str) -> str:
