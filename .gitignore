@@ -8,4 +8,4 @@ node_modules/
 .vscode/
 openlaws-surveyor-plugin.zip
 .claude/
-byoc/dist/*alpha-hosted*
+byoc/dist/*alpha*
