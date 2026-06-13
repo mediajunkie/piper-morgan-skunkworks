@@ -9,10 +9,12 @@
     {
       "name": "piper-morgan",
       "source": {
-        "source": "local",
-        "path": "./piper-morgan"
+        "source": "git-subdir",
+        "url": "https://github.com/mediajunkie/piper-morgan-skunkworks.git",
+        "path": "byoc/dist/piper-morgan",
+        "ref": "main"
       },
-      "description": "Piper Morgan as a Claude plugin (BYOC PoC): three layered skills over a local MCP server. meet-piper learns how YOU work as a PM (two-mode: serial cold-start interview on first install, compact scoped update on return); ask-piper relays a question to your local Piper; consult-piper gathers missing context from GitHub and re-asks with honest provenance. Server-owned config works on every surface. Requires a local Piper Morgan server.",
+      "description": "Piper Morgan as a Claude plugin (BYOC PoC): three layered skills over a local MCP server. meet-piper learns how YOU work as a PM (two-mode: serial cold-start interview on first install, compact scoped update on return); ask-piper relays a question to your local Piper; consult-piper gathers missing context from GitHub and re-asks with honest provenance. Server-owned config works on every surface. Requires PIPER_BASE_URL set to your hosted Piper instance (or leave unset to default to localhost:8001 for local dev).",
       "author": {
         "name": "Piper Morgan skunkworks (PA + subagents)"
       }
