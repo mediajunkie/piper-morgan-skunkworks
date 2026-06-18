@@ -1,0 +1,66 @@
+{
+  "manifest_version": "0.3",
+  "name": "piper-morgan",
+  "display_name": "Piper Morgan — PM Skills",
+  "version": "0.1.0",
+  "description": "Product management assistant that brings calibrated PM skills into Claude. After a short onboarding interview it builds a profile — your work style, priorities, and context — and uses it to power sprint planning, stakeholder updates, feature proposals, and more.",
+  "author": {
+    "name": "Christian Crumlish",
+    "email": "ccrumlish@kindsys.us",
+    "url": "https://github.com/mediajunkie"
+  },
+  "server": {
+    "type": "uv",
+    "entry_point": "mcp/server.py"
+  },
+  "user_config": {
+    "piper_base_url": {
+      "type": "string",
+      "title": "Piper Morgan Server URL",
+      "description": "URL of your Piper Morgan server. Use https://alpha.pipermorgan.ai for the hosted alpha, or http://localhost:8001 if running locally.",
+      "required": false,
+      "default": "http://localhost:8001",
+      "sensitive": false
+    },
+    "anthropic_api_key": {
+      "type": "string",
+      "title": "Anthropic API Key",
+      "description": "Your Anthropic API key. Required when connecting to the hosted server so LLM costs stay on your account.",
+      "required": false,
+      "sensitive": true
+    }
+  },
+  "tools": [
+    {
+      "name": "ask_piper",
+      "description": "Send a product management question to Piper Morgan and get a profile-aware response"
+    },
+    {
+      "name": "get_profile",
+      "description": "Retrieve your PM profile stored in Piper Morgan"
+    },
+    {
+      "name": "save_profile",
+      "description": "Save or update your PM profile in Piper Morgan"
+    },
+    {
+      "name": "get_company_profile",
+      "description": "Retrieve your company context stored in Piper Morgan"
+    },
+    {
+      "name": "save_company_profile",
+      "description": "Save or update your company context in Piper Morgan"
+    }
+  ],
+  "keywords": ["product-management", "pm", "planning", "claude", "skills"],
+  "license": "MIT",
+  "homepage": "https://pipermorgan.ai",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/mediajunkie/piper-morgan-skunkworks"
+  },
+  "privacy_policies": [
+    "https://pipermorgan.ai/privacy"
+  ],
+  "_notes": "PROVISIONAL — server.type 'uv' uses PEP-723 inline deps in mcp/server.py. Needs Arch sign-off on Python vs. Node.js before MCPB form submission. The user_config.sensitive pattern requires mcpb toolchain >= 0.3."
+}
