@@ -1,0 +1,59 @@
+name: piper-morgan
+displayName: Piper Morgan — PM Skills for Claude
+description: |
+  Piper Morgan is a product management assistant that brings PM skills directly
+  into Claude Desktop. After a short onboarding interview, it builds a calibrated
+  PM profile — your work style, priorities, and context — and uses it to power
+  skills like sprint planning, stakeholder updates, trust checking, and feature
+  proposals.
+
+  Skills included:
+  - **meet-piper**: One-time PM onboarding interview; builds your profile.
+  - **ask-piper**: Forward any PM question to the Piper assistant.
+  - **consult-piper**: Deeper PM consultation with profile context.
+
+  Additional skills (sprint-plan, stakeholder-update, trust-check, propose-feature,
+  and more) available when running with a connected Piper Morgan server.
+
+homepage: https://pipermorgan.ai
+repository: https://github.com/mediajunkie/piper-morgan-skunkworks
+license: MIT
+categories:
+  - productivity
+  - product-management
+tags:
+  - pm
+  - product-management
+  - planning
+  - claude
+
+startCommand:
+  type: stdio
+  configSchema:
+    type: object
+    properties:
+      PIPER_BASE_URL:
+        type: string
+        description: |
+          URL of your Piper Morgan server. Defaults to http://localhost:8001
+          (local). Set to https://alpha.pipermorgan.ai for the hosted alpha,
+          or your own hosted instance.
+        default: "http://localhost:8001"
+      ANTHROPIC_API_KEY:
+        type: string
+        description: |
+          Your Anthropic API key. Required when connecting to a hosted Piper
+          server (the server uses your key for LLM calls, keeping costs on
+          your account). Not needed when running a local server with its own
+          configured key.
+        secret: true
+    required: []
+  commandFunction: |-
+    (config) => ({
+      command: "uv",
+      args: ["run", "byoc/dist/piper-morgan/mcp/server.py"],
+      env: {
+        ...(config.PIPER_BASE_URL ? { PIPER_BASE_URL: config.PIPER_BASE_URL } : {}),
+        ...(config.ANTHROPIC_API_KEY ? { ANTHROPIC_API_KEY: config.ANTHROPIC_API_KEY } : {})
+      }
+    })

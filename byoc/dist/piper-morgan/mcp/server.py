@@ -29,6 +29,7 @@ from mcp.server.fastmcp import FastMCP
 PIPER_BASE = os.environ.get("PIPER_BASE_URL", "http://localhost:8001")
 INTENT_URL = f"{PIPER_BASE}/api/v1/intent"
 SESSION_ID = "byoc-poc"
+USER_API_KEY = os.environ.get("ANTHROPIC_API_KEY", "")
 
 # --- Config storage (server-owned; canonical path kept as human-editable mirror) ---
 # Overridable for tests / non-default homes. Default = the canonical plugin config path,
@@ -115,9 +116,10 @@ async def ask_piper(message: str) -> str:
     # like success but was a Piper-side reasoning-engine error — previously indistinguishable
     # from a real answer. ---
     try:
+        headers = {"X-User-Api-Key": USER_API_KEY} if USER_API_KEY else {}
         async with httpx.AsyncClient(timeout=30.0) as client:
             resp = await client.post(
-                INTENT_URL, json={"message": message, "session_id": SESSION_ID}
+                INTENT_URL, json={"message": message, "session_id": SESSION_ID}, headers=headers
             )
     except httpx.ConnectError:
         return (
