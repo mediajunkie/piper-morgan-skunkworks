@@ -23,9 +23,10 @@ The BYOC key-passing question (user provides their own Anthropic API key) is NOT
 
 ## Open questions for PM
 
-1. **Fly.io timing** — #1278 gates the hosted endpoint. Is this being frontloaded before M5, or should we use a different temporary hosted endpoint for the PoC?
-2. **Subagent 3 gate test still owed** — the cold-start-as-PM-profile scaffold in `byoc/poc/piper-morgan/` (commit `a018b4d`) has never been run as a behavioral test by PM. Low urgency now that v0.4.0 exists in `dinp/`, but worth noting.
-3. **Piper Open cross-pollination** — both Piper Morgan and Piper Open are solving the hosted MCP problem in parallel. Need a mechanism to share notes (see Finding #4).
+1. **Fly.io timing** — #1278 is LD work. Does PM want to frontload it before M5, or hold for M5 sprint? For the PoC, we can use ngrok/Tailscale to unblock without waiting for Fly.io.
+2. **MCPB clean-machine test** — PM needs to run this: macOS, no system Python, current Claude Desktop. Gate for #1282 marketplace submissions.
+3. **Piper Open cross-pollination mechanism** — proposed: shared `hosted-mcp/` surface in skunkworks. Is Janus still active as cross-project coordinator, or is PM the only bridge right now?
+4. **1.0 scoping questions** — metering/rate-limiting, subscription model, GDPR. See identity decision doc.
 
 ---
 
@@ -112,3 +113,12 @@ Piper Open / OpenLaws project worked through the same problem. Key-passing works
 
 ### Gate 2 — Auth for PoC (Jun 19, 2026)
 **Decision**: Skip auth for now. No BYOC API key field in user_config needed for the PoC. The PoC just needs a non-localhost hosted endpoint. OAuth deferred to a separate issue.
+
+### Gate 3 — Identity approach (Jun 19, 2026)
+**Decision**: PM-ratified.
+- PoC: no auth (open endpoint)
+- MVP / beta (0.9.0): UUID bearer — generated at first MCP connect, scoped per device, persisted in plugin config
+- Production (1.0): email + magic link, Piper-native — email is account recovery + multi-device bridge; UUID becomes account ID after verification
+- Post-1.0: "Login with..." as optional convenience overlay, NOT the foundation
+- Principle: no building identity on another company's ID
+- Full decision doc: `byoc/notes/identity-decision-2026-06-19.md`
