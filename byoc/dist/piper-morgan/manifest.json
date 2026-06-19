@@ -14,7 +14,7 @@
     "entry_point": "mcp/server.py",
     "mcp_config": {
       "command": "uv",
-      "args": ["run", "mcp/server.py"]
+      "args": ["--directory", "${__dirname}", "run", "mcp/server.py"]
     }
   },
   "user_config": {
