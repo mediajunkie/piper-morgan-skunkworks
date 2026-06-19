@@ -117,6 +117,61 @@ There's a Caddy gate-removal decision pending (Lead Dev 6/17 memo). Caddy curren
 - Redis + ChromaDB: confirm if stateless-enough to skip
 - Estimated effort: ~2-4 hours (specced as coding agent work once Caddy decision is made)
 
+**Reference implementation — Piper Open (openlaws-research-agent, PR #154):**
+
+Piper Open just shipped a complete hosted Streamable HTTP MCP on Fly.io. Their pattern is directly applicable to our MCP server (`byoc/poc/dinp/piper-morgan/mcp/server.py`).
+
+The multi-tenant auth pattern (copy-paste adapted for Piper Morgan):
+```python
+import contextvars, hashlib, time
+from starlette.responses import JSONResponse
+
+_caller_token = contextvars.ContextVar("piper_caller_token", default=None)
+
+class InboundAuth:
+    """Pure-ASGI front door — NOT Starlette BaseHTTPMiddleware (contextvars don't propagate in BMH)."""
+    def __init__(self, app): self.app = app
+
+    async def __call__(self, scope, receive, send):
+        if scope["type"] != "http":
+            await self.app(scope, receive, send); return
+        if scope.get("path") == "/health":
+            await JSONResponse({"status": "ok"})(scope, receive, send); return
+        auth = dict(scope.get("headers") or []).get(b"authorization", b"").decode()
+        token = auth.split(" ", 1)[1].strip() if auth.lower().startswith("bearer ") else None
+        if not token:
+            await JSONResponse({"error": "missing bearer token"}, status_code=401)(scope, receive, send)
+            return
+        reset = _caller_token.set(token)
+        try:
+            await self.app(scope, receive, send)
+        finally:
+            _caller_token.reset(reset)
+```
+
+Then in `ask_piper` and any tool that calls the Piper backend:
+```python
+token = _caller_token.get()  # the UUID bearer; scopes all data to this customer
+headers = {"X-Piper-User-ID": token} if token else {}
+```
+
+And the `main_http()` entry point:
+```python
+def main_http():
+    import uvicorn
+    mcp = FastMCP("piper-morgan", stateless_http=True, transport_security=_transport_security())
+    # ... register tools ...
+    app = InboundAuth(mcp.streamable_http_app())
+    uvicorn.run(app, host="0.0.0.0", port=int(os.environ.get("PORT", "8000")), timeout_graceful_shutdown=25)
+```
+
+**Critical learnings from PO's implementation:**
+1. Pure-ASGI middleware is REQUIRED for contextvars to propagate — BaseHTTPMiddleware spawns a separate task and breaks it
+2. `/health` must answer without auth (Fly's health check may not include the customer hostname)
+3. Never log the raw token — use `hashlib.sha256(token.encode()).hexdigest()[:8]` as a caller fingerprint
+4. Set `OPENLAWS_ALLOWED_HOSTS` (→ `PIPER_ALLOWED_HOSTS` for us) for DNS rebinding protection
+5. `uvicorn timeout_graceful_shutdown=25` handles Fly rolling deploys cleanly
+
 ---
 
 ## Layer 4: Auth + Identity

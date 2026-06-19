@@ -122,3 +122,34 @@ Piper Open / OpenLaws project worked through the same problem. Key-passing works
 - Post-1.0: "Login with..." as optional convenience overlay, NOT the foundation
 - Principle: no building identity on another company's ID
 - Full decision doc: `byoc/notes/identity-decision-2026-06-19.md`
+
+---
+
+## Finding log
+
+### Finding #5 — Piper Open's hosted MCP implementation (reference for Piper Morgan)
+**Date**: Jun 19, 2026 | **Source**: openlaws-research-agent repo, PR #154 + server.py
+
+The openlaws-research-agent just shipped a complete Streamable HTTP hosted MCP server on Fly.io. This is a reference implementation for Piper Morgan's same problem. Key patterns:
+
+**Multi-tenant token pass-through (the core pattern):**
+```python
+_caller_token: contextvars.ContextVar[str | None] = contextvars.ContextVar(
+    "openlaws_caller_token", default=None
+)
+```
+`InboundAuth` (pure-ASGI middleware — NOT Starlette's `BaseHTTPMiddleware`) extracts the bearer token from each request and stores it in a `ContextVar`. The tool handlers read it via `_caller_token.get()`. This is how one process serves many customers without a shared credential.
+
+**Critical: pure-ASGI, not BaseHTTPMiddleware.** BaseHTTPMiddleware runs the downstream app in a separate task, so context vars don't propagate. Must use pure-ASGI middleware for this pattern to work.
+
+**No server-side stored API keys.** For OpenLaws, the customer's OpenLaws API key IS the bearer token — the MCP passes it upstream per-request. No secrets stored server-side. For Piper Morgan, our UUID bearer plays the same role: the UUID IS the per-customer credential.
+
+**DNS rebinding protection:** `TransportSecuritySettings(enable_dns_rebinding_protection=True, allowed_hosts=[...])` — must set `OPENLAWS_ALLOWED_HOSTS` env var on Fly.io. FastMCP `stateless_http=True` mode.
+
+**Fly.io hardening patterns:**
+- `/health` endpoint answers 200 without auth (Fly's health check may not send the app hostname)
+- Graceful shutdown: `uvicorn.run(..., timeout_graceful_shutdown=25)` 
+- Structured access log with `hashlib.sha256(token).hexdigest()[:8]` fingerprint (never logs raw token)
+- `OPENLAWS_ALLOWED_HOSTS` + `OPENLAWS_ALLOWED_ORIGINS` env vars for host-protection
+
+**Applicable to Piper Morgan:** Our `mcp/server.py` (currently stdio/local) can adopt the same `main_http()` entry point + `InboundAuth` pattern for the hosted path. UUID bearer replaces the OpenLaws API key as the pass-through credential. See `byoc/notes/piper-morgan-hosted-distribution-guide-2026-06-19.md` for updated guide.
