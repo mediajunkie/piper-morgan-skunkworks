@@ -10,8 +10,12 @@
     "url": "https://github.com/mediajunkie"
   },
   "server": {
-    "type": "uv",
-    "entry_point": "mcp/server.py"
+    "type": "python",
+    "entry_point": "mcp/server.py",
+    "mcp_config": {
+      "command": "uv",
+      "args": ["run", "mcp/server.py"]
+    }
   },
   "user_config": {
     "piper_base_url": {
@@ -62,5 +66,9 @@
   "privacy_policies": [
     "https://pipermorgan.ai/privacy"
   ],
-  "_notes": "PROVISIONAL — server.type 'uv' uses PEP-723 inline deps in mcp/server.py. Needs Arch sign-off on Python vs. Node.js before MCPB form submission. The user_config.sensitive pattern requires mcpb toolchain >= 0.3."
+  "_meta": {
+    "notes": {
+      "status": "privacy_policies URL (pipermorgan.ai/privacy) must exist before submission. Clean-machine test still needed."
+    }
+  }
 }
