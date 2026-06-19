@@ -80,6 +80,12 @@ Current state of `byoc/poc/dinp/piper-morgan/` (plugin.json v0.4.0):
 - **PM decision on auth**: skip auth for now; get hosted infrastructure working first. OAuth is the mechanism for metering + returning-user-identity (Piper Open finding — see Finding #4), but that's a separate issue. The immediate PoC goal is a working plugin ↔ hosted backend connection without auth.
 - **Piper Open parallel track flagged**: PM surfaced that Piper Open / OpenLaws project is solving the same hosted MCP problem independently. Cross-pollination mechanism needed.
 
+### 2026-06-19 (evening — v0.1.1 clean install confirmed)
+
+- v0.1.1 install: uninstall of v0.1.0 required (mcpb does NOT upgrade in place — uninstall first, then double-click). After uninstall + reinstall: **server connects, all 5 tools register, permissions UI renders correctly**.
+- **Tool permissions finding**: all 5 tools (ask_piper, get_profile, save_profile, get_company_profile, save_company_profile) appear in the "Tool permissions" panel with auto/approval/deny controls per tool. This works correctly with mcpb. PM noted PO has struggled with this in their plugin bundle — mcpb format handles it correctly. Cross-pollination note sent to PO.
+- **Next gate**: test `ask_piper` with Piper server running at localhost:8001.
+
 ---
 
 ## Finding log
