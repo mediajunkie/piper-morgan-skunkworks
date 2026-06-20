@@ -62,10 +62,16 @@ not pretending to know it exactly — and saying it the way a colleague would, n
 Pull the user's current open work from GitHub — targeted to the declared gap, not a fishing trip:
 - **Prefer a GitHub MCP tool** if the host has one connected.
 - **Otherwise fall back to the `gh` CLI** (the host has shell access): e.g.
-  `gh issue list --repo <user's active repo> -s open -L 15 --json number,title,labels,assignees`.
+  `gh issue list --repo <user's active repo> -s open -L 10 --json number,title,labels,assignees`.
   A "priority slice" (open issues, maybe filtered to assigned / high-priority) is plenty — don't dump
   hundreds of issues.
 - If you don't know the user's active repo, ask (one question), don't guess.
+
+**Size limits (required — avoid payload errors on re-ask):**
+- Cap the issues list at **10 issues maximum** (`-L 10` in the gh CLI example above).
+- Keep the total context block under **~2 000 characters**. If the list would exceed that,
+  summarize: e.g. "15 issues total; showing top 10: …" and truncate the rest.
+- Format concisely: **one line per issue** — `#N title [label]` — not full JSON dumps.
 
 ### 5. Re-ask Piper, enriched
 Call `ask_piper` again with the original question **plus** the gathered context folded into the message:
@@ -74,6 +80,11 @@ Call `ask_piper` again with the original question **plus** the gathered context 
 > on today?"
 
 Now Piper has the context it was missing, and can give a grounded answer.
+
+**Character budget**: keep the enriched message under **~3 000 characters total** (question + context).
+If the context block is long, summarize it further before folding in — the `ask_piper` transport layer
+will hard-truncate at 8 000 chars with a notice, but aim to stay well under that so Piper receives
+coherent context rather than a clipped list.
 
 ### 6. Present with visible provenance — in plain language
 Show the user Piper's enriched answer. Make clear **what came from where**, in normal words:
