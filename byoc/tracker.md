@@ -11,7 +11,7 @@ PA daily status + subagent dispatch state + open questions + finding log for the
 **Current PoC**: `byoc/poc/dinp/piper-morgan/` — plugin.json v0.4.0, MCPB v0.1.1, all 5 tools register
 **Product version**: v0.8.8 on `production` branch; `alpha.pipermorgan.ai` hosting on DigitalOcean Droplet (PM-owned); deploy pending Lead Dev
 **Next gate**: Droplet deploy → PM tests `ask_piper` against hosted backend
-**Alpha skills**: `piper-morgan-skills.zip` ready on PM's Desktop; tester email v5 ready to send
+**Alpha skills**: `piper-morgan-skills.zip` ready on PM's Desktop; tester email v5 drafted and held — PM priority is "batten down the hatches" (complete remaining work) before outreach
 **Repo**: https://github.com/mediajunkie/piper-morgan-skunkworks (private)
 
 ### Phase summary
@@ -97,7 +97,8 @@ Current state of `byoc/poc/dinp/piper-morgan/` (plugin.json v0.4.0):
 - **curl install path verified live**: `https://raw.githubusercontent.com/mediajunkie/piper-morgan-product/main/.claude/skills/piper-sprint-plan/SKILL.md` returns correctly.
 - **`cut-release` skill created** (`.claude/skills/cut-release/SKILL.md`) — prevents "bumped version but left prose body stale" failure mode; splits doc updates into explicit version-string + prose-body tasks.
 - **PA role portfolio filed** (`docs/briefing/ROLE-PORTFOLIO-PA.md`) — self-authored v0.1 against the trust framework. Sent to Exec/HOST/PM.
-- **Blocked**: MCPB plugin → hosted backend test (waiting on Droplet deploy); MCPB clean-machine test (PM to run); Fly.io (#1278) Lead Dev backlog.
+- **Priority order (PM 2026-06-20)**: finish remaining work ("batten down the hatches") before tester outreach. Email held until: (1) Droplet deploy live, (2) MCPB clean-machine test passes, (3) remaining #1289 callers retired. Then send.
+**Blocked**: MCPB plugin → hosted backend test (waiting on Droplet deploy); MCPB clean-machine test (PM to run); #1289 remaining callers (Lead Dev).
 - **Last PA touch**: 2026-06-20
 
 ---
