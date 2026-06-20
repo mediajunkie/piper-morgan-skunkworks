@@ -2,7 +2,7 @@
   "manifest_version": "0.3",
   "name": "piper-morgan",
   "display_name": "Piper Morgan — PM Skills",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Product management assistant that brings calibrated PM skills into Claude. After a short onboarding interview it builds a profile — your work style, priorities, and context — and uses it to power sprint planning, stakeholder updates, feature proposals, and more.",
   "author": {
     "name": "Christian Crumlish",
@@ -23,7 +23,7 @@
       "title": "Piper Morgan Server URL",
       "description": "URL of your Piper Morgan server. Use https://alpha.pipermorgan.ai for the hosted alpha, or http://localhost:8001 if running locally.",
       "required": false,
-      "default": "http://localhost:8001",
+      "default": "https://alpha.pipermorgan.ai",
       "sensitive": false
     },
     "anthropic_api_key": {
@@ -54,6 +54,10 @@
     {
       "name": "save_company_profile",
       "description": "Save or update your company context in Piper Morgan"
+    },
+    {
+      "name": "connect",
+      "description": "Store the shared Piper Morgan alpha password so ask_piper can authenticate with the hosted server. Run this once after installing the plugin."
     }
   ],
   "keywords": ["product-management", "pm", "planning", "claude", "skills"],
