@@ -7,9 +7,11 @@ PA daily status + subagent dispatch state + open questions + finding log for the
 ## Status
 
 **Phase**: Step 1 — hosted endpoint connection (no auth for now; OAuth deferred)
-**Last PA touch**: 2026-06-19
-**Current PoC**: `byoc/poc/dinp/piper-morgan/` — plugin.json v0.4.0, MCP server working against local backend
-**Next gate**: PM runs hosted-endpoint test once Fly.io backend is reachable
+**Last PA touch**: 2026-06-20
+**Current PoC**: `byoc/poc/dinp/piper-morgan/` — plugin.json v0.4.0, MCPB v0.1.1, all 5 tools register
+**Product version**: v0.8.8 on `production` branch; `alpha.pipermorgan.ai` hosting on DigitalOcean Droplet (PM-owned); deploy pending Lead Dev
+**Next gate**: Droplet deploy → PM tests `ask_piper` against hosted backend
+**Alpha skills**: `piper-morgan-skills.zip` ready on PM's Desktop; tester email v5 ready to send
 **Repo**: https://github.com/mediajunkie/piper-morgan-skunkworks (private)
 
 ### Phase summary
@@ -23,7 +25,7 @@ The BYOC key-passing question (user provides their own Anthropic API key) is NOT
 
 ## Open questions for PM
 
-1. **Fly.io timing** — #1278 is LD work. Does PM want to frontload it before M5, or hold for M5 sprint? For the PoC, we can use ngrok/Tailscale to unblock without waiting for Fly.io.
+1. **Hosted endpoint** — PM's DigitalOcean Droplet confirmed as hosting target (not Fly.io). Lead Dev working on deploy mechanism. Options to unblock PoC test before Droplet is live: ngrok or Tailscale to `localhost:8001`.
 2. **MCPB clean-machine test** — PM needs to run this: macOS, no system Python, current Claude Desktop. Gate for #1282 marketplace submissions.
 3. **Piper Open cross-pollination mechanism** — proposed: shared `hosted-mcp/` surface in skunkworks. Is Janus still active as cross-project coordinator, or is PM the only bridge right now?
 4. **1.0 scoping questions** — metering/rate-limiting, subscription model, GDPR. See identity decision doc.
@@ -85,6 +87,18 @@ Current state of `byoc/poc/dinp/piper-morgan/` (plugin.json v0.4.0):
 - v0.1.1 install: uninstall of v0.1.0 required (mcpb does NOT upgrade in place — uninstall first, then double-click). After uninstall + reinstall: **server connects, all 5 tools register, permissions UI renders correctly**.
 - **Tool permissions finding**: all 5 tools (ask_piper, get_profile, save_profile, get_company_profile, save_company_profile) appear in the "Tool permissions" panel with auto/approval/deny controls per tool. This works correctly with mcpb. PM noted PO has struggled with this in their plugin bundle — mcpb format handles it correctly. Cross-pollination note sent to PO.
 - **Next gate**: test `ask_piper` with Piper server running at localhost:8001.
+
+### 2026-06-20 (Saturday morning — alpha skills packaged + tester email ready)
+
+- **v0.8.8 released** (shipped Jun 19–20): tags pushed, GitHub Release live, `production` branch at v0.8.8. ALPHA_QUICKSTART prose updated. Deployment to `alpha.pipermorgan.ai` pending Lead Dev (Droplet hosting confirmed — not Fly.io; Lead Dev working on deploy mechanism tonight).
+- **#1289 standup skill**: MCP standup skill migrated to honest engine (`build_user_standup_summary`); 62/62 tests pass. Remaining callers (route + handler) tracked for later migration.
+- **Alpha tester email v5 ready** (`dev/2026/06/19/alpha-tester-email-draft.md`): curl-path scope clarified (Claude Code only — the .skill zip works everywhere). Email can now go out.
+- **`piper-morgan-skills.zip` packaged** on Desktop (30K, 5 skills: sprint-plan, stakeholder-update, draft-issue, draft-spec, synthesize-feedback). Verified all 5 .skill files in `~/Desktop/piper-morgan-skills/` open correctly; README descriptions are clean.
+- **curl install path verified live**: `https://raw.githubusercontent.com/mediajunkie/piper-morgan-product/main/.claude/skills/piper-sprint-plan/SKILL.md` returns correctly.
+- **`cut-release` skill created** (`.claude/skills/cut-release/SKILL.md`) — prevents "bumped version but left prose body stale" failure mode; splits doc updates into explicit version-string + prose-body tasks.
+- **PA role portfolio filed** (`docs/briefing/ROLE-PORTFOLIO-PA.md`) — self-authored v0.1 against the trust framework. Sent to Exec/HOST/PM.
+- **Blocked**: MCPB plugin → hosted backend test (waiting on Droplet deploy); MCPB clean-machine test (PM to run); Fly.io (#1278) Lead Dev backlog.
+- **Last PA touch**: 2026-06-20
 
 ---
 
