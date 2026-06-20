@@ -2,7 +2,7 @@
   "manifest_version": "0.3",
   "name": "piper-morgan",
   "display_name": "Piper Morgan — PM Skills",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Product management assistant that brings calibrated PM skills into Claude. After a short onboarding interview it builds a profile — your work style, priorities, and context — and uses it to power sprint planning, stakeholder updates, feature proposals, and more.",
   "author": {
     "name": "Christian Crumlish",
