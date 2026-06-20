@@ -5,7 +5,8 @@
 """Piper Morgan BYOC PoC — MCP server (thin plugin PoC).
 
 Tools:
-- ask_piper(message)         — forward a NL message to local Piper /api/v1/intent (rung 1/2/3).
+- ask_piper(message)         — forward a NL message to Piper /api/v1/intent (rung 1/2/3).
+- connect(credential)        — store the shared Caddy basic-auth password (#1300).
 - get_profile / save_profile — PM profile config, OWNED BY THE SERVER (#1157 fix).
 - get_company_profile / save_company_profile — shared cross-context profile.
 
@@ -14,7 +15,13 @@ which works in Claude Code (agent owns the FS) but breaks in Cowork (sandboxed F
 The SERVER has normal process FS access on any surface, so it owns config; the agent calls tools.
 The canonical file is kept as a human-editable + down-server-fallback MIRROR.
 
-Tracking: mediajunkie/piper-morgan-product#1145, #1157.
+Credential design (#1300): the shared Caddy basic-auth password is stored server-side in
+credential.json (never in .mcp.json or any plugin-distributed file). PIPER_BASE_URL carries
+only the bare host. ask_piper() reads the credential and sends it as HTTP Basic Auth on each
+request. If no credential is stored, ask_piper returns a NOT-CONNECTED message with instructions
+to run the connect() tool.
+
+Tracking: mediajunkie/piper-morgan-product#1145, #1157, #1295, #1300.
 Python + uv (PEP-723 inline deps; `uv run server.py` self-bootstraps — no venv).
 """
 import json
@@ -42,7 +49,12 @@ CONFIG_ROOT = Path(
 )
 PROFILE_PATH = CONFIG_ROOT / "piper-morgan" / "CLAUDE.md"
 COMPANY_PROFILE_PATH = CONFIG_ROOT / "company-profile.md"
+CREDENTIAL_PATH = CONFIG_ROOT / "piper-morgan" / "credential.json"
 PLACEHOLDER_MARKER = "[PLACEHOLDER]"
+
+# Fixed username for Caddy basic-auth on alpha.pipermorgan.ai (#1300).
+# Only the password changes between deployments; the username is baked here, not in config.
+PIPER_AUTH_USERNAME = "piperalpha"
 
 mcp = FastMCP("piper-morgan")
 
@@ -96,6 +108,59 @@ def _write_profile(path: Path, content: str, label: str) -> str:
     return f"[{label}: SAVED] Wrote {len(content)} chars to {path} (schema v{SCHEMA_VERSION})."
 
 
+# --- Credential helpers (#1300) ---
+
+def _read_credential() -> str | None:
+    """Return the stored Caddy basic-auth password, or None if not configured.
+
+    Format: JSON {"password": "<value>"} — simple and human-editable if needed.
+    Returns None on any read/parse error (caller handles as NOT-CONNECTED).
+    """
+    try:
+        if not CREDENTIAL_PATH.exists():
+            return None
+        data = json.loads(CREDENTIAL_PATH.read_text(encoding="utf-8"))
+        return data.get("password") or None
+    except Exception:  # noqa: BLE001 — credential absent → NOT-CONNECTED, not crash
+        return None
+
+
+def _write_credential(password: str) -> str:
+    """Persist the Caddy basic-auth password to server-owned config.
+
+    Returns a success or error string (same pattern as _write_profile).
+    """
+    try:
+        CREDENTIAL_PATH.parent.mkdir(parents=True, exist_ok=True)
+        CREDENTIAL_PATH.write_text(
+            json.dumps({"password": password}, indent=2), encoding="utf-8"
+        )
+    except Exception as e:  # noqa: BLE001
+        return f"[connect: WRITE-ERROR] {type(e).__name__}: {e} (path: {CREDENTIAL_PATH})"
+    return (
+        f"[connect: SAVED] Credential stored at {CREDENTIAL_PATH}. "
+        f"ask_piper() will now authenticate as '{PIPER_AUTH_USERNAME}'."
+    )
+
+
+@mcp.tool()
+async def connect(credential: str) -> str:
+    """Store the shared Piper Morgan alpha server password so ask_piper() can authenticate.
+
+    The alpha server (alpha.pipermorgan.ai) uses Caddy HTTP Basic Auth. The password is
+    shared out-of-band (ask PM). Once stored, ask_piper() sends it automatically on every
+    request — you never need to pass it again.
+
+    Args:
+        credential: the shared basic-auth password for alpha.pipermorgan.ai.
+
+    Returns a confirmation on success, or an error message if the write fails.
+    """
+    if not credential or not credential.strip():
+        return "[connect: INVALID] credential must not be empty."
+    return _write_credential(credential.strip())
+
+
 @mcp.tool()
 async def ask_piper(message: str) -> str:
     """Ask Piper Morgan (a PM assistant) to interpret a natural-language PM request and
@@ -103,12 +168,39 @@ async def ask_piper(message: str) -> str:
 
     Use this for conversational PM questions ("what should I focus on?", "draft an issue
     about X", "what's the status of Y?") where you want *Piper's* take, grounded in its
-    own context, rather than answering as generic Claude. Requires a local Piper Morgan
-    server running on :8001 (`python main.py`).
+    own context, rather than answering as generic Claude. When connecting to the alpha
+    server (alpha.pipermorgan.ai), run connect(credential="<password>") first — the
+    password is stored once and used automatically on every subsequent call.
 
     Args:
         message: the natural-language request to send to Piper.
     """
+    # --- Credential check (#1300) ---
+    # Only required when PIPER_BASE_URL points at the alpha server (or any Basic-Auth-
+    # protected host). If no credential is stored, fail fast with clear instructions.
+    password = _read_credential()
+    if password is None and "localhost" not in PIPER_BASE and "127.0.0.1" not in PIPER_BASE:
+        return (
+            "[ask_piper: NOT-CONNECTED] No credential stored — run the connect tool first: "
+            "connect(credential=\"<your password>\"). "
+            "Ask PM for the shared alpha server password. "
+            "PM skills are also available separately — install from "
+            "https://github.com/mediajunkie/piper-morgan-product or ask PM for the "
+            "piper-morgan-skills.zip."
+        )
+
+    auth = (PIPER_AUTH_USERNAME, password) if password else None
+
+    # Safety net: truncate oversized messages before they hit the server's POST limit.
+    # Motivated by #1244 Bug B: consult-piper re-asks with a large issues list and the
+    # enriched payload can exceed /api/v1/intent's body limit.
+    MAX_MESSAGE_CHARS = 8_000
+    if len(message) > MAX_MESSAGE_CHARS:
+        message = (
+            message[:MAX_MESSAGE_CHARS]
+            + "\n[… message truncated to 8000 chars by ask_piper safety limit]"
+        )
+
     # --- Failure-mode attribution (so test failures are distinguishable from real Piper
     # behavior). Each branch tags WHICH layer failed: transport / HTTP / Piper-internal.
     # Motivated by the 2026-06-04 "AI service unavailable" run: a HTTP-200 body that LOOKED
@@ -117,7 +209,9 @@ async def ask_piper(message: str) -> str:
     try:
         async with httpx.AsyncClient(timeout=30.0) as client:
             resp = await client.post(
-                INTENT_URL, json={"message": message, "session_id": SESSION_ID}
+                INTENT_URL,
+                json={"message": message, "session_id": SESSION_ID},
+                auth=auth,
             )
     except httpx.ConnectError:
         return (
@@ -134,6 +228,12 @@ async def ask_piper(message: str) -> str:
         )
     except Exception as e:  # noqa: BLE001 — PoC: report any other transport failure plainly
         return f"[ask_piper: TRANSPORT-ERROR] {type(e).__name__}: {e} (calling {INTENT_URL})"
+
+    if resp.status_code == 401:
+        return (
+            "[ask_piper: AUTH-FAILED] Credential rejected by the Piper server (HTTP 401). "
+            "Update it with connect(credential=\"<new password>\") and ask PM if unsure."
+        )
 
     if resp.status_code != 200:
         return (
