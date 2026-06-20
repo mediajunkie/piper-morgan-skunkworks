@@ -18,6 +18,34 @@ We want external users (not just xian) to be able to:
 
 ---
 
+## Distribution scenarios — the four valid states
+
+A user can have any combination of skills and MCP connector installed. All four states are coherent; none is "broken." Each incomplete state points toward the complete one.
+
+| Scenario | What's installed | Experience | Self-completion signal |
+|---|---|---|---|
+| **1 — Skills only** | Work skills (`.skill` files) | Claude-level PM help via slash commands; no Piper backend routing | Bridge skills not included — this package is complete for what it is |
+| **2 — MCP only** | Plugin (`.mcpb`) | `ask_piper` and profile tools available; Claude may call them spontaneously | `ask_piper` response can hint that skills exist and offer install guidance |
+| **3 — Skills + MCP** | Work skills + bridge skills + plugin | Full local experience: Piper's conscious floor + Claude PM execution + profile awareness | No recommendation needed — complete |
+| **4 — Plugin bundle** | Single `.mcpb` containing skills + MCP | One-install = Scenario 3, in Cowork and Code | Marketplace target |
+
+**The self-completing property**: each half-install recommends the other half.
+- Skills-only → bridge skills detect absent connector → explain + offer install link
+- MCP-only → `ask_piper` response signals that PM skills would unlock more → offer install
+- Neither direction is a broken state, just an incomplete one that points toward the full experience.
+
+**Skill categories within the collection:**
+
+*Work skills* (`piper-draft-issue`, `piper-sprint-plan`, `piper-stakeholder-update`, `piper-draft-spec`, `piper-synthesize-feedback`) — standalone Claude-PM skills. Work without the plugin; optionally enhanced if `ask_piper` is present.
+
+*Bridge skills* (`ask-piper`, `consult-piper`, `meet-piper`) — route through `ask_piper`. If connector absent, detect it and offer install; don't fail silently. Distributed alongside work skills in Scenario 3/4.
+
+All skills follow the same distribution format (`.skill` files or manifest declaration) — the connector-presence check at runtime creates the capability tiers, not separate distribution paths.
+
+**`meet-piper` note**: cold-start onboarding skill — run once to populate the PM profile. Likely better suited as a plugin onboarding step triggered on first `ask_piper` call with no profile, rather than a regular-use slash command. Deferred to a later rung.
+
+---
+
 ## Layer 1: Skills (slash commands)
 
 **What works:**
