@@ -39,6 +39,19 @@ the question and surfaces the answer faithfully.
    isn't running), tell the user plainly: the local Piper server isn't up; start it with
    `python main.py` (port 8001), then retry. **Never fabricate a Piper answer** when the server is down.
 
+## If the Piper Morgan connector isn't installed
+
+If `ask_piper` isn't in your available tools, the Piper Morgan plugin isn't installed in this session.
+Tell the user plainly — don't try to simulate Piper or fail silently:
+
+> "I don't see the Piper Morgan connector installed, so I can't reach Piper directly. To get the full
+> experience, install the Piper Morgan plugin (the `.mcpb` file) in Claude Desktop → Settings →
+> Connectors. Once it's connected, this skill routes your question through Piper's own reasoning engine.
+> In the meantime, I can try to help with your PM question directly — just without Piper's project
+> context or profile awareness."
+
+Then offer to help directly if the user wants. A graceful fallback beats a broken experience.
+
 ## Scope guard (read before editing this skill)
 
 This skill is a **bare passthrough** by design (rung 2 of the thin-PoC, locked 2026-06-04). It does

@@ -86,6 +86,22 @@ you, the host) and the prioritization came from Piper. But say it plainly: "Pipe
 The issue list I pulled for it… / I just formatted the above." No `floor_hit`, no `context_keys`, no
 "intent classification" labels in the output.
 
+## If the Piper Morgan connector isn't installed
+
+If `ask_piper` isn't in your available tools, the Piper Morgan plugin isn't installed in this session.
+Tell the user plainly:
+
+> "I don't see the Piper Morgan connector — `consult-piper` is the full enrichment loop that asks
+> Piper, gathers your GitHub context when it needs it, and re-asks enriched. Without the connector I
+> can't start that loop. Install the Piper Morgan plugin (`.mcpb`) in Claude Desktop → Settings →
+> Connectors, then try again.
+>
+> In the meantime I can pull your GitHub issues and give you a prioritized view directly — just without
+> Piper's routing and reasoning on top."
+
+Then offer the direct fallback if the user wants. The enrichment loop is the point of this skill; without
+the connector it can't run, so be honest about that rather than attempting a partial version.
+
 ### 7. No silent failures (throughout)
 - Honor `ask_piper`'s failure tags (`SERVER-DOWN`, `PIPER-INTERNAL-ERROR`, `TIMEOUT`, etc.) — relay them
   plainly, don't fabricate a Piper answer.
