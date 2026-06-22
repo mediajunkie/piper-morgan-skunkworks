@@ -1,8 +1,8 @@
 {
   "manifest_version": "0.3",
   "name": "piper-morgan",
-  "display_name": "Piper Morgan — PM Skills",
-  "version": "0.1.2",
+  "display_name": "Piper Morgan",
+  "version": "0.1.3",
   "description": "Product management assistant that brings calibrated PM skills into Claude. After a short onboarding interview it builds a profile — your work style, priorities, and context — and uses it to power sprint planning, stakeholder updates, feature proposals, and more.",
   "author": {
     "name": "Christian Crumlish",
@@ -13,7 +13,7 @@
     "type": "python",
     "entry_point": "mcp/server.py",
     "mcp_config": {
-      "command": "uv",
+      "command": "${__dirname}/bin/uv-launch",
       "args": ["--directory", "${__dirname}", "run", "mcp/server.py"]
     }
   },

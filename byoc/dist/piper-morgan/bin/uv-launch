@@ -1,0 +1,9 @@
+#!/bin/sh
+D="$(cd "$(dirname "$0")" && pwd)"
+case "$(uname -m)" in
+  arm64|aarch64) B="$D/uv-arm64" ;;
+  x86_64)        B="$D/uv-x64"   ;;
+  *) echo "piper plugin: unsupported arch $(uname -m)" >&2; exit 1 ;;
+esac
+chmod +x "$B" 2>/dev/null || true
+exec "$B" "$@"
