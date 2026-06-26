@@ -1,38 +1,42 @@
 # Piper Morgan — alpha tester quickstart
 
-You're testing Piper Morgan as a Claude Desktop plugin. The plugin's local helper routes requests to
-a Piper Morgan server — either a hosted alpha instance or your own local dev server.
+You're testing Piper Morgan as a Claude Desktop plugin. The plugin talks to a hosted Piper Morgan
+server over the internet — you don't run anything locally.
 
-## One-time prerequisites
+## Install (2 steps)
 
-### 1. Install `uv`
-The plugin's small local helper runs through it:
+### Step 1 — Open the plugin installer in Claude Desktop
 
-    curl -LsSf https://astral.sh/uv/install.sh | sh
+In the Claude Desktop sidebar, look for **"Personal plugins"** with a **"+"** button next to it.
+Click that **"+"**.
 
-### 2. Set `PIPER_BASE_URL`
-The plugin needs to know where your Piper Morgan server lives. Set this in your shell environment
-**before** launching Claude Desktop:
+> **Important:** this is NOT the Skills "+" or the Connectors section — it's the Personal plugins line.
+> If you see "Upload skill" or a 30MB size warning, you're in the wrong place. Close and look for the
+> Personal plugins section in the left sidebar.
 
-    export PIPER_BASE_URL="https://<your-hosted-piper-instance>"
+A file picker appears. Choose the file **`piper-morgan-v0.1.5.mcpb`** (the file you received or
+downloaded). That's it — no Python, no uv, no server to start. Everything needed is bundled inside.
 
-If you're running Piper locally (dev mode), you can omit `PIPER_BASE_URL` entirely — the plugin
-defaults to `http://localhost:8001`. Start your local server with `python main.py` first.
+### Step 2 — Authenticate once
 
-> **Note for alpha testers**: if you received a hosted endpoint URL from the Piper team, use that
-> as your `PIPER_BASE_URL` value. Do not commit or share this URL publicly.
+After the plugin appears in your sidebar, start a new conversation and run:
 
-## Install
-Install this plugin zip in Claude Desktop (plugin install → from file).
+```
+connect [shared password]
+```
+
+Replace `[shared password]` with the password from the Piper team. You only need to do this once.
 
 ## Try it
-- `/piper-morgan:meet-piper`    — one-time ~10-min setup; learns how you work as a PM. Stays on your machine.
-- `/piper-morgan:ask-piper`     — ask Piper a PM question (e.g. "what should I focus on today?").
-- `/piper-morgan:consult-piper` — fuller working session; gathers context (from your GitHub) when Piper needs it.
 
-`meet-piper` and `ask-piper` need nothing but `uv`. `consult-piper` additionally uses your GitHub
-(`gh` CLI or a connected GitHub) for its context-gathering.
+Once connected:
+
+- `ask_piper "what should I focus on today?"` — ask Piper a PM question
+- `get_profile` — see your PM profile (empty until you fill it)
+- `save_profile` — update your profile so Piper knows your context
 
 ## Found something off?
-That's the point of an alpha — note it and send it back. Empty/failed/"can't reach Piper" states are
-all useful findings.
+
+That's the point of an alpha — note it and send it back. Anything unexpected (errors, confusing
+messages, "can't reach Piper") is useful feedback. The shared password goes through the `connect`
+tool only — don't paste it into a chat message directly.
