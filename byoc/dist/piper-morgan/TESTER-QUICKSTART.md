@@ -1,6 +1,6 @@
 # Piper Morgan — alpha tester quickstart
 
-You're testing Piper Morgan as a Claude Desktop plugin. The plugin talks to a hosted Piper Morgan
+You're testing Piper Morgan as a Claude Desktop MCP bundle. It talks to a hosted Piper Morgan
 server over the internet — you don't run anything locally.
 
 ## Install (2 steps)
@@ -19,7 +19,7 @@ That's it — no Python, no uv, no server to start. Everything needed is bundled
 
 ### Step 2 — Authenticate once
 
-After the plugin appears in your sidebar, start a new conversation and run:
+After the MCP bundle installs, start a new conversation and run:
 
 ```
 connect [shared password]
