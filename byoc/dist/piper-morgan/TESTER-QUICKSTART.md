@@ -5,17 +5,17 @@ server over the internet — you don't run anything locally.
 
 ## Install (2 steps)
 
-### Step 1 — Open the plugin installer in Claude Desktop
+### Step 1 — Install the MCP bundle in Claude Desktop
 
-In the Claude Desktop sidebar, look for **"Personal plugins"** with a **"+"** button next to it.
-Click that **"+"**.
+**Easiest:** double-click the `.mcpb` file — Claude Desktop will open and prompt you to install.
 
-> **Important:** this is NOT the Skills "+" or the Connectors section — it's the Personal plugins line.
-> If you see "Upload skill" or a 30MB size warning, you're in the wrong place. Close and look for the
-> Personal plugins section in the left sidebar.
+**Alternatively:** in Claude Desktop, go to **Connectors** in the left sidebar, click **"+"**, then
+choose the `.mcpb` file from the file picker.
 
-A file picker appears. Choose the file **`piper-morgan-v0.1.5.mcpb`** (the file you received or
-downloaded). That's it — no Python, no uv, no server to start. Everything needed is bundled inside.
+> **Note:** this is NOT Skills (which has an "Upload skill" flow limited to 30MB zip files).
+> It's the **Connectors** section — MCP bundles install there, not under Skills or Personal plugins.
+
+That's it — no Python, no uv, no server to start. Everything needed is bundled inside.
 
 ### Step 2 — Authenticate once
 
